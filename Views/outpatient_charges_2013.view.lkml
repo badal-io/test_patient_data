@@ -1,11 +1,10 @@
 view: outpatient_charges_2013 {
-  sql_table_name: `@{outpatient_charges_2013_table}` ;;
+  sql_table_name: `@{outpatient_charges_table}` ;;
 
   # Primary Key
-  dimension: pk {
+  dimension: primary_key {
     primary_key: yes
     hidden: yes
-    type: string
     sql: CONCAT(${provider_id}, '-', ${apc}) ;;
   }
 
@@ -27,43 +26,43 @@ view: outpatient_charges_2013 {
   dimension: provider_street_address {
     type: string
     label: "Provider Street Address"
-    description: "Street address of the healthcare provider"
+    description: "Street address of the provider"
     sql: ${TABLE}.provider_street_address ;;
   }
 
   dimension: provider_city {
     type: string
     label: "Provider City"
-    description: "City where the healthcare provider is located"
+    description: "City where the provider is located"
     sql: ${TABLE}.provider_city ;;
   }
 
   dimension: provider_state {
     type: string
     label: "Provider State"
-    description: "State where the healthcare provider is located"
+    description: "State where the provider is located"
     sql: ${TABLE}.provider_state ;;
   }
 
   dimension: provider_zipcode {
     type: string
     label: "Provider Zipcode"
-    description: "Zipcode of the healthcare provider"
+    description: "Zipcode of the provider location"
     sql: ${TABLE}.provider_zipcode ;;
   }
 
   dimension: apc {
     type: string
     label: "APC"
-    description: "Ambulatory Payment Classification"
+    description: "Ambulatory Payment Classification code and description"
     sql: ${TABLE}.apc ;;
   }
 
   dimension: apc_code {
     type: string
     label: "APC Code"
-    description: "4 digit APC code extracted from APC field"
-    sql: REGEXP_EXTRACT(${apc}, r'^(\d{4})') ;;
+    description: "4-digit APC code extracted from the beginning of the APC field"
+    sql: SUBSTR(${TABLE}.apc, 1, 4) ;;
   }
 
   dimension: hospital_referral_region {
@@ -75,28 +74,28 @@ view: outpatient_charges_2013 {
 
   # Hidden dimensions for measures
   dimension: outpatient_services_raw {
-    hidden: yes
     type: number
+    hidden: yes
     sql: ${TABLE}.outpatient_services ;;
   }
 
   dimension: average_estimated_submitted_charges_raw {
-    hidden: yes
     type: number
+    hidden: yes
     sql: ${TABLE}.average_estimated_submitted_charges ;;
   }
 
   dimension: average_total_payments_raw {
-    hidden: yes
     type: number
+    hidden: yes
     sql: ${TABLE}.average_total_payments ;;
   }
 
   # Measures
   measure: outpatient_services {
     type: sum
-    label: "Outpatient Services"
-    description: "Total number of outpatient services"
+    label: "Total Outpatient Services"
+    description: "Total number of outpatient services provided"
     sql: ${outpatient_services_raw} ;;
     value_format: "#,##0.00"
   }
@@ -104,7 +103,7 @@ view: outpatient_charges_2013 {
   measure: average_estimated_submitted_charges {
     type: average
     label: "Average Estimated Submitted Charges"
-    description: "Average estimated submitted charges"
+    description: "Average estimated submitted charges for outpatient services"
     sql: ${average_estimated_submitted_charges_raw} ;;
     value_format: "#,##0.00"
   }
@@ -112,16 +111,21 @@ view: outpatient_charges_2013 {
   measure: average_total_payments {
     type: average
     label: "Average Total Payments"
-    description: "Average total payments"
+    description: "Average total payments for outpatient services"
     sql: ${average_total_payments_raw} ;;
     value_format: "#,##0.00"
+  }
+
+  measure: count {
+    type: count
+    label: "Count of Records"
+    description: "Total count of outpatient charge records"
   }
 
   measure: count_providers {
     type: count_distinct
     label: "Count of Providers"
-    description: "Number of unique providers"
+    description: "Distinct count of providers"
     sql: ${provider_id} ;;
-    value_format: "#,##0.00"
   }
 }

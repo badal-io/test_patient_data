@@ -1,20 +1,17 @@
-# Include view files needed for this explore
+# Include view files
 include: "/Views/*.view.lkml"
 
 explore: inpatient_outpatient {
   label: "Inpatient & Outpatient"
-  description: "Combined view of inpatient and outpatient charges data for healthcare providers"
-  view_label: "Inpatient & Outpatient Analysis"
+  view_label: "Inpatient Charges"
 
-  view_name: inpatient_charges_2013
-
-  # Use the datagroup for caching
-  persist_with: week_end
+  # Base view using derived table for the join
+  from: inpatient_charges_2013
 
   join: outpatient_charges_2013 {
+    view_label: "Outpatient Charges"
     type: left_outer
-    relationship: one_to_many
-    sql_on: ${inpatient_charges_2013.provider_id} = ${outpatient_charges_2013.provider_id} ;;
-    view_label: "Outpatient Data"
+    relationship: many_to_one
+    sql_on: ${inpatient_outpatient.provider_id} = ${outpatient_charges_2013.provider_id} ;;
   }
 }
