@@ -10,5 +10,5 @@ include: "/data_tests/*.lkml"
 datagroup: week_end {
   description: "Triggers every Monday at 9am Eastern Time"
   sql_trigger: SELECT FLOOR((UNIX_SECONDS(CURRENT_TIMESTAMP()) - 32400) / 604800) ;;
-  max_cache_age: "1 week"
+  max_cache_age: "24 hours"
 }

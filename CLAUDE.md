@@ -163,6 +163,7 @@ The datagroup parameter can have the following subparameters:
 * **label** — Specifies an optional label for the datagroup.
 * **description** — Specifies an optional description for the datagroup that can be used to explain the datagroup's purpose and mechanism.
 * **max_cache_age** — Specifies a string that defines a time period. When the age of a query's cache exceeds the time period, Looker invalidates the cache. The next time the query is issued, Looker sends the query to the database for fresh results.
+The max_cache_age parameter specifies a string containing an integer followed by "seconds", "minutes", or "hours". This time period is the maximum time period for the cached results to be used by Explore queries that use the datagroup
 * **sql_trigger** — Specifies a SQL query that returns one row with one column. If the value that is returned by the query is different from the query's prior results, then the datagroup goes into a triggered state.
 * **interval_trigger** — Specifies a time schedule for triggering the datagroup, such as "24 hours".
 
@@ -184,3 +185,21 @@ Types of Relationships
 * **one_to_one**: Every row in the base view corresponds to exactly one row in the joined view.
 * **one_to_many**: One row in the base view corresponds to many rows in the joined view. For example, a single order can have many order_items.
 * **many_to_many**: Many rows in the base view correspond to many rows in the joined view. This is the most complex relationship.
+
+## Use of variables from manifest file
+For BigQuery connection:
+When a table name defined as a constant in the manifest file then the constant should be put in `` when is used in a view file. 
+For example:
+* Manifeset constant:
+'''
+constant: table_name {
+  value: "project_name.schema_name.table_name"
+  export: override_required
+}
+'''
+* View file:
+```
+view: view_name {
+  sql_table_name: `@{table_name}` ;;
+  ...
+```

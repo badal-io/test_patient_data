@@ -1,5 +1,5 @@
 view: inpatient_charges_2013 {
-  sql_table_name: @{inpatient_charges_2013_table} ;;
+  sql_table_name: `@{inpatient_charges_2013_table}` ;;
 
   # Primary Key
   dimension: pk {
