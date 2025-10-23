@@ -14,13 +14,14 @@ The model file is already create with the connection defined.
     * name: week_end
     * description: Triggers every Monday at 9am Eastern Time 
     * logic: sql statement that triggers on mondays at 9am ET
+    * cache should be stored for 12 hours
 
 # Project structure
 
 * Create folders:
     * Views (for view files)
     * Explores (for explore lookml files)
-    * LookML Dashboards (for LookML dashboards)
+    * LookML_Dashboards (for LookML dashboards)
     * data_tests (for data tests)
 * Create a manifest file (to define constants)
 
@@ -126,12 +127,33 @@ Explore 1:
     from `prj-s-dlp-dq-sandbox-0b3c.EK_test_data.inpatient_charges_2013` a
     join `prj-s-dlp-dq-sandbox-0b3c.EK_test_data.outpatient_charges_2013` b
     on a.provider_id=b.provider_id
+* View 1:
+    * inpatient_charges_2013
+    * view label: Inpatient Chargers
+* View 2:
+    * outpatient_charges_2013
+    * view label: Outpatient Chargers 
+
+* Join type: left_outer
+* relationship: many_to_one
 
 # Reporting
 Build a lookML dashboard that has
     * single tile with number of providers (count of provider_id)
     * Column chart with: City (provider_city), Hospital (hospital_referral_region) and outpatient_services
     * filters: City, Hospital, Zipcode
+
+# Data tests
+* Create two data tests
+    *   Check that provider zipcode field from inpatient_charges_2013 doesn't have any NULLs
+    * check that measure outpatient_services from outpatient_charges_2013 is greater than 1000 by city
+
+# Documentation
+Generate a Readme.md file with the information about the project:
+* source data
+* structure of the semantic layer
+* what reports are defined
+* etc
 
 # Rules/Best Practices
 
@@ -202,4 +224,29 @@ constant: table_name {
 view: view_name {
   sql_table_name: `@{table_name}` ;;
   ...
+}
+```
+
+## Data tests
+You can create data tests in model files, view files, or in separate, dedicated data test files. When using a dedicated file to house your data tests, remember to include the data test file in any model file or view file where you want to run your data tests.
+
+A data test cannot have the same name and explore_source as another data test in the same project. If you are using the same explore_source for multiple data tests in your project, be sure that the names of the data tests are all unique.
+
+The test parameter has the following subparameters:
+* explore_source: Defines the query to use in the data test.
+* assert: Defines a Looker expression that is run on every row of the test query to verify the data. For use in data tests, fields in the Looker expression must be fully scoped, meaning they are specified using the view_name.field_name format
+
+Example:
+```
+test: historic_revenue_is_accurate {
+  explore_source:  orders {
+    column:  total_revenue {
+      field:  orders.total_revenue 
+    }
+    filters: [orders.created_date:  "2017"]
+  }
+  assert:  revenue_is_expected_value {
+    expression: ${orders.total_revenue} = 626000 ;;
+  }
+}
 ```
