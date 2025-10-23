@@ -126,7 +126,6 @@ Explore 1:
     from `prj-s-dlp-dq-sandbox-0b3c.EK_test_data.inpatient_charges_2013` a
     join `prj-s-dlp-dq-sandbox-0b3c.EK_test_data.outpatient_charges_2013` b
     on a.provider_id=b.provider_id
-* 
 
 # Reporting
 Build a lookML dashboard that has
@@ -134,7 +133,7 @@ Build a lookML dashboard that has
     * Column chart with: City (provider_city), Hospital (hospital_referral_region) and outpatient_services
     * filters: City, Hospital, Zipcode
 
-# Rules/Limitations
+# Rules/Best Practices
 
 ## Naming convention for LookML elements
 
@@ -161,12 +160,27 @@ Define a datagroup with the datagroup parameter, either in a model file or in it
 
 The datagroup parameter can have the following subparameters:
 
-* label — Specifies an optional label for the datagroup.
-* description — Specifies an optional description for the datagroup that can be used to explain the datagroup's purpose and mechanism.
-* max_cache_age — Specifies a string that defines a time period. When the age of a query's cache exceeds the time period, Looker invalidates the cache. The next time the query is issued, Looker sends the query to the database for fresh results.
-* sql_trigger — Specifies a SQL query that returns one row with one column. If the value that is returned by the query is different from the query's prior results, then the datagroup goes into a triggered state.
-* interval_trigger — Specifies a time schedule for triggering the datagroup, such as "24 hours".
+* **label** — Specifies an optional label for the datagroup.
+* **description** — Specifies an optional description for the datagroup that can be used to explain the datagroup's purpose and mechanism.
+* **max_cache_age** — Specifies a string that defines a time period. When the age of a query's cache exceeds the time period, Looker invalidates the cache. The next time the query is issued, Looker sends the query to the database for fresh results.
+* **sql_trigger** — Specifies a SQL query that returns one row with one column. If the value that is returned by the query is different from the query's prior results, then the datagroup goes into a triggered state.
+* **interval_trigger** — Specifies a time schedule for triggering the datagroup, such as "24 hours".
 
 At a minimum, a datagroup must have at least the max_cache_age parameter, the sql_trigger parameter, or the interval_trigger parameter.
 
 A datagroup cannot have both sql_trigger and interval_trigger parameters. If you define a datagroup with both parameters, the datagroup will use the interval_trigger value and ignore the sql_trigger value, since the sql_trigger parameter requires Looker to use database resources when querying the database.
+
+## Defining an explore
+
+### Don't forget to use include
+For the explore file `include` has to be used to inlude files or folders with the view files.
+If there is a folder with all views it's better to include just it instead of all files. 
+
+### relationships paratemeter
+Relationships in LookML describe the cardinality between a base view and a joined view. This information is crucial for Looker’s query engine to generate efficient and correct SQL, especially for aggregations. The relationship parameter is a best practice to always include in a join.
+
+Types of Relationships
+* **many_to_one**: Many rows in the base view correspond to one row in the joined view. This is the most common relationship for joining a fact table to a dimension table. For example, many orders can be associated with one customer.
+* **one_to_one**: Every row in the base view corresponds to exactly one row in the joined view.
+* **one_to_many**: One row in the base view corresponds to many rows in the joined view. For example, a single order can have many order_items.
+* **many_to_many**: Many rows in the base view correspond to many rows in the joined view. This is the most complex relationship.
