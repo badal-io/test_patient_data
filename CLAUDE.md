@@ -133,3 +133,40 @@ Build a lookML dashboard that has
     * single tile with number of providers (count of provider_id)
     * Column chart with: City (provider_city), Hospital (hospital_referral_region) and outpatient_services
     * filters: City, Hospital, Zipcode
+
+# Rules/Limitations
+
+## Naming convention for LookML elements
+
+* Spaces and special characters: Filenames cannot include spaces or any of the following characters: / ? * : | " < > %
+* File extensions: When creating LookML files with the Looker IDE, Looker will automatically add the .lkml extension to the end of the filename if you don't include the extension manually. For example, if you enter the filename flights_data_tests, Looker will name the file flights_data_tests.lkml
+
+## File types:
+
+* Model files with the file extension .model.lkml
+* View files with the file extension .view.lkml 
+* Project manifest files that are always named manifest.lkml
+* Dashboard files with the file extension .dashboard.lookml
+* Document files with the file extension .md
+* Locale strings files with the file extension .strings.json
+* Generic LookML files, which are used for the following types of files:
+    * Explore files with the file extension .explore.lkml
+    * Data test files with the file extension .lkml
+    * Refinements files with the file extension .lkml
+    * Any other files you're using to house LookML elements
+
+## Defining a datagroup
+
+Define a datagroup with the datagroup parameter, either in a model file or in its own LookML file. You can define multiple datagroups if you want different caching and persistent derived table (PDT) rebuild policies for different Explores or PDTs in your project.
+
+The datagroup parameter can have the following subparameters:
+
+* label — Specifies an optional label for the datagroup.
+* description — Specifies an optional description for the datagroup that can be used to explain the datagroup's purpose and mechanism.
+* max_cache_age — Specifies a string that defines a time period. When the age of a query's cache exceeds the time period, Looker invalidates the cache. The next time the query is issued, Looker sends the query to the database for fresh results.
+* sql_trigger — Specifies a SQL query that returns one row with one column. If the value that is returned by the query is different from the query's prior results, then the datagroup goes into a triggered state.
+* interval_trigger — Specifies a time schedule for triggering the datagroup, such as "24 hours".
+
+At a minimum, a datagroup must have at least the max_cache_age parameter, the sql_trigger parameter, or the interval_trigger parameter.
+
+A datagroup cannot have both sql_trigger and interval_trigger parameters. If you define a datagroup with both parameters, the datagroup will use the interval_trigger value and ignore the sql_trigger value, since the sql_trigger parameter requires Looker to use database resources when querying the database.
