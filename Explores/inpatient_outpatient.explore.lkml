@@ -1,16 +1,15 @@
-include: "/Views/inpatient_charges_2013.view.lkml"
-include: "/Views/outpatient_charges_2013.view.lkml"
+include: "/Views/*.view.lkml"
 
 explore: inpatient_outpatient {
   label: "Inpatient & Outpatient"
-  view_label: "Inpatient Charges"
+  description: "Explore combining inpatient and outpatient charges data"
 
-  from: inpatient_charges_2013
+  view_name: inpatient_charges_2013
 
   join: outpatient_charges_2013 {
-    view_label: "Outpatient Charges"
     type: left_outer
     relationship: many_to_one
-    sql_on: ${inpatient_outpatient.provider_id} = ${outpatient_charges_2013.provider_id} ;;
+    sql_on: ${inpatient_charges_2013.provider_id} = ${outpatient_charges_2013.provider_id} ;;
+    view_label: "Outpatient Chargers"
   }
 }

@@ -1,131 +1,117 @@
 view: bikeshare_stations {
   sql_table_name: `@{bikeshare_stations_table}` ;;
 
-  # Primary Key
-  dimension: primary_key {
-    primary_key: yes
-    hidden: yes
-    type: number
-    sql: ${station_id} ;;
-  }
-
-  # Dimensions
+  # Primary Key (hidden)
   dimension: station_id {
-    type: number
+    primary_key: yes
+    hidden: no
     label: "Station ID"
-    description: "Unique identifier for bike station"
+    description: "Unique identifier for the bikeshare station"
+    type: number
     sql: ${TABLE}.station_id ;;
   }
 
+  # Dimensions
   dimension: name {
-    type: string
     label: "Station Name"
-    description: "Name of the bike station"
+    description: "Name of the bikeshare station"
+    type: string
     sql: ${TABLE}.name ;;
   }
 
   dimension: status {
-    type: string
     label: "Status"
-    description: "Current status of the bike station"
+    description: "Status of the bikeshare station"
+    type: string
     sql: ${TABLE}.status ;;
   }
 
   dimension: location {
-    type: location
     label: "Location"
-    description: "Geographic location of the bike station"
-    sql_latitude: CAST(REPLACE(SPLIT(${TABLE}.location, ',')[OFFSET(0)], '(', '') AS FLOAT64) ;;
-    sql_longitude: CAST(REPLACE(SPLIT(${TABLE}.location, ',')[OFFSET(1)], ')', '') AS FLOAT64) ;;
+    description: "Geographic coordinates of the station"
+    type: location
+    sql_latitude: CAST(SPLIT(SUBSTR(${TABLE}.location, 2, LENGTH(${TABLE}.location) - 2), ',')[OFFSET(0)] AS FLOAT64) ;;
+    sql_longitude: CAST(SPLIT(SUBSTR(${TABLE}.location, 2, LENGTH(${TABLE}.location) - 2), ',')[OFFSET(1)] AS FLOAT64) ;;
   }
 
   dimension: address {
-    type: string
     label: "Address"
-    description: "Street address of the bike station"
+    description: "Physical address of the station"
+    type: string
     sql: ${TABLE}.address ;;
   }
 
   dimension: alternate_name {
-    type: string
     label: "Alternate Name"
-    description: "Alternative name for the bike station"
+    description: "Alternative name for the station"
+    type: string
     sql: ${TABLE}.alternate_name ;;
   }
 
   dimension: city_asset_number {
-    type: number
     label: "City Asset Number"
     description: "City asset identification number"
+    type: number
     sql: ${TABLE}.city_asset_number ;;
   }
 
   dimension: property_type {
-    type: string
     label: "Property Type"
-    description: "Type of property where station is located"
+    description: "Type of property where the station is located"
+    type: string
     sql: ${TABLE}.property_type ;;
   }
 
   dimension: power_type {
-    type: string
     label: "Power Type"
-    description: "Type of power source for the station"
+    description: "Type of power supply for the station"
+    type: string
     sql: ${TABLE}.power_type ;;
   }
 
   dimension: notes {
-    type: string
     label: "Notes"
-    description: "Additional notes about the bike station"
+    description: "Additional notes about the station"
+    type: string
     sql: ${TABLE}.notes ;;
   }
 
   dimension: council_district {
-    type: number
     label: "Council District"
-    description: "City council district number"
+    description: "City council district where the station is located"
+    type: number
     sql: ${TABLE}.council_district ;;
   }
 
   dimension: image {
-    type: string
     label: "Image"
-    description: "URL to station image"
+    description: "Image URL of the station"
+    type: string
     sql: ${TABLE}.image ;;
   }
 
-  # Dimension Groups (Time)
-  dimension_group: modified {
+  # Time dimension
+  dimension_group: modified_date {
     type: time
     label: "Modified"
-    description: "Date when station information was last modified"
-    timeframes: [time, date, week, month, year, raw]
+    timeframes: [time, date, week, month, raw]
     sql: ${TABLE}.modified_date ;;
   }
 
-  dimension: modified_month_year {
-    group_label: "Modified Date"
-    label: "Month + Year"
-    type: string
-    sql: DATE_TRUNC(${modified_date}, MONTH) ;;
-    html: {{ rendered_value | date: "%B %Y" }};;
-  }
-
-  # Hidden dimensions for measures (with NULL handling)
-  dimension: number_of_docks_raw {
+  # Hidden dimensions for measures
+  dimension: _number_of_docks {
     hidden: yes
     type: number
     sql: COALESCE(${TABLE}.number_of_docks, 0) ;;
   }
 
-  dimension: footprint_length_raw {
+  dimension: _footprint_length {
     hidden: yes
     type: number
     sql: COALESCE(${TABLE}.footprint_length, 0) ;;
   }
 
-  dimension: footprint_width_raw {
+  dimension: _footprint_width {
     hidden: yes
     type: number
     sql: COALESCE(${TABLE}.footprint_width, 0) ;;
@@ -133,41 +119,32 @@ view: bikeshare_stations {
 
   # Measures
   measure: number_of_docks {
+    label: "Number of Docks"
+    description: "Total number of docks at the station"
     type: sum
-    label: "Total Number of Docks"
-    description: "Total number of bike docks"
-    sql: ${number_of_docks_raw} ;;
-    value_format: "#,##0.00"
-  }
-
-  measure: average_number_of_docks {
-    type: average
-    label: "Average Number of Docks"
-    description: "Average number of bike docks per station"
-    sql: ${number_of_docks_raw} ;;
+    sql: ${_number_of_docks} ;;
     value_format: "#,##0.00"
   }
 
   measure: footprint_length {
+    label: "Footprint Length"
+    description: "Length of the station footprint"
     type: sum
-    label: "Total Footprint Length"
-    description: "Total footprint length of stations"
-    sql: ${footprint_length_raw} ;;
+    sql: ${_footprint_length} ;;
     value_format: "#,##0.00"
   }
 
   measure: footprint_width {
-    type: sum
-    label: "Total Footprint Width"
-    description: "Total footprint width of stations"
-    sql: ${footprint_width_raw} ;;
+    label: "Footprint Width"
+    description: "Width of the station footprint"
+    type: average
+    sql: ${_footprint_width} ;;
     value_format: "#,##0.00"
   }
 
-  measure: count_stations {
+  measure: count {
+    label: "Count"
     type: count
-    label: "Count of Stations"
-    description: "Total number of bike stations"
-    value_format: "#,##0.00"
+    drill_fields: [station_id, name, address, count]
   }
 }

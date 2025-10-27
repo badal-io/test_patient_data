@@ -2,12 +2,12 @@
 
 Generate LookML code for a looker project 'test_patient_data' that uses 'test_patient_data' model file.
 
-# Database/Conection
+# Database/Connection
 
 This Looker project is connected to a database in BigQuery (GCP)
 
 # Model file
-The model file is already create with the connection defined.
+The model file is already created with the connection defined.
 
 * Add 'include` lines to include elements from all folders
 * add a datagroup:
@@ -291,6 +291,20 @@ Generate a Readme.md file with the information about the project:
 * structure of the semantic layer
 * what reports are defined
 * etc
+
+# Add CI/CD pipeline to be executed in GitHub
+I would like you to add a ci/cd pipeline in a form of GitHub actions
+
+Examples of a ci/cd pipeline with the steps that I want:
+* the main workflow file: https://github.com/badal-io/bi_sandbox/blob/master/.github/workflows/lookml-validation.yml
+* Steps:
+    * LookML syntax validation using Looker API: https://github.com/badal-io/bi_sandbox/blob/master/.github/scripts/looker-validator.py
+    * Tests actual SQL execution against databases: https://github.com/badal-io/bi_sandbox/blob/master/.github/scripts/sql-execution-validator.py
+* add a config file like this https://github.com/badal-io/bi_sandbox/blob/master/.github/config/looker-config.ini.template
+
+so I want for the pipeline to have only two steps: LookML validation and SQL validation
+
+I'll add GitHub secrets to github. 
 
 # Rules/Best Practices
 

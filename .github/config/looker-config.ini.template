@@ -1,0 +1,46 @@
+[looker]
+# Looker API Configuration
+# This file serves as a template. In GitHub Actions, these values are
+# provided via secrets and environment variables.
+
+# Base URL for Looker instance
+# Example: https://looker.company.com
+base_url = https://your-looker-instance.com
+
+# Looker API credentials
+# Create an API key in Looker admin settings
+client_id = YOUR_CLIENT_ID
+client_secret = YOUR_CLIENT_SECRET
+
+# Project name to validate
+project_name = test_patient_data
+
+# Log level for validation
+log_level = INFO
+
+[bigquery]
+# BigQuery Configuration
+# Project ID where data sources are located
+project_id = prj-s-dlp-dq-sandbox-0b3c
+
+# Dataset where tables are located
+dataset_id = EK_test_data
+
+# Source tables for validation
+# Comma-separated list of fully qualified table names
+source_tables = prj-s-dlp-dq-sandbox-0b3c.EK_test_data.inpatient_charges_2013,prj-s-dlp-dq-sandbox-0b3c.EK_test_data.outpatient_charges_2013,prj-s-dlp-dq-sandbox-0b3c.EK_test_data.bikeshare_trips,bigquery-public-data.austin_bikeshare.bikeshare_stations
+
+[validation]
+# Validation Settings
+
+# Enable LookML syntax validation
+enable_lookml_validation = true
+
+# Enable SQL execution validation
+enable_sql_validation = true
+
+# Maximum query execution time (seconds)
+max_query_time = 30
+
+# Whether to fail on warnings
+fail_on_warnings = false

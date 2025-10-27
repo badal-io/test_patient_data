@@ -1,0 +1,94 @@
+name: LookML Validation and Testing
+
+on:
+  push:
+    branches:
+      - master
+      - vs_test_branch
+      - 'feature/**'
+  pull_request:
+    branches:
+      - master
+
+permissions:
+  contents: read
+  checks: write
+
+jobs:
+  lookml-validation:
+    runs-on: ubuntu-latest
+    name: LookML Syntax Validation
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install requests google-cloud-bigquery google-auth-oauthlib
+
+      - name: Run LookML Validation
+        env:
+          LOOKER_BASE_URL: ${{ secrets.LOOKER_BASE_URL }}
+          LOOKER_CLIENT_ID: ${{ secrets.LOOKER_CLIENT_ID }}
+          LOOKER_CLIENT_SECRET: ${{ secrets.LOOKER_CLIENT_SECRET }}
+        run: |
+          python .github/scripts/looker-validator.py
+
+  sql-validation:
+    runs-on: ubuntu-latest
+    name: SQL Validation Against BigQuery
+    needs: lookml-validation
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install google-cloud-bigquery google-auth-oauthlib pyyaml
+
+      - name: Set up Google Cloud credentials
+        env:
+          GCP_CREDENTIALS: ${{ secrets.GCP_CREDENTIALS }}
+        run: |
+          mkdir -p ~/.config/gcloud
+          echo "$GCP_CREDENTIALS" > ~/.config/gcloud/service-account-key.json
+          export GOOGLE_APPLICATION_CREDENTIALS=~/.config/gcloud/service-account-key.json
+
+      - name: Run SQL Validation
+        env:
+          GOOGLE_APPLICATION_CREDENTIALS: ${{ secrets.GCP_CREDENTIALS }}
+          GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+        run: |
+          python .github/scripts/sql-execution-validator.py
+
+  validation-summary:
+    runs-on: ubuntu-latest
+    name: Validation Summary
+    needs: [lookml-validation, sql-validation]
+    if: always()
+
+    steps:
+      - name: Check job status
+        run: |
+          if [ "${{ needs.lookml-validation.result }}" = "failure" ] || [ "${{ needs.sql-validation.result }}" = "failure" ]; then
+            echo "❌ Validation failed"
+            exit 1
+          else
+            echo "✅ All validations passed"
+          fi
