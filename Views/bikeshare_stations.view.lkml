@@ -35,8 +35,8 @@ view: bikeshare_stations {
     type: location
     label: "Location"
     description: "Geographic location of the bike station"
-    sql_latitude: CAST(SPLIT(${TABLE}.location, ',')[OFFSET(0)] AS FLOAT64) ;;
-    sql_longitude: CAST(SPLIT(${TABLE}.location, ',')[OFFSET(1)] AS FLOAT64) ;;
+    sql_latitude: CAST(REPLACE(SPLIT(${TABLE}.location, ',')[OFFSET(0)], '(', '') AS FLOAT64) ;;
+    sql_longitude: CAST(REPLACE(SPLIT(${TABLE}.location, ',')[OFFSET(1)], ')', '') AS FLOAT64) ;;
   }
 
   dimension: address {
