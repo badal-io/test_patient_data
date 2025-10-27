@@ -1,11 +1,10 @@
-# Include view files
-include: "/Views/*.view.lkml"
+include: "/Views/inpatient_charges_2013.view.lkml"
+include: "/Views/outpatient_charges_2013.view.lkml"
 
 explore: inpatient_outpatient {
   label: "Inpatient & Outpatient"
   view_label: "Inpatient Charges"
 
-  # Base view using derived table for the join
   from: inpatient_charges_2013
 
   join: outpatient_charges_2013 {

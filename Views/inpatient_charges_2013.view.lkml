@@ -5,6 +5,7 @@ view: inpatient_charges_2013 {
   dimension: primary_key {
     primary_key: yes
     hidden: yes
+    type: string
     sql: CONCAT(${provider_id}, '-', ${drg_definition}) ;;
   }
 
@@ -12,7 +13,7 @@ view: inpatient_charges_2013 {
   dimension: provider_id {
     type: string
     label: "Provider ID"
-    description: "Unique identifier for the healthcare provider"
+    description: "Unique identifier for healthcare provider"
     sql: ${TABLE}.provider_id ;;
   }
 
@@ -26,28 +27,28 @@ view: inpatient_charges_2013 {
   dimension: provider_street_address {
     type: string
     label: "Provider Street Address"
-    description: "Street address of the provider"
+    description: "Street address of the healthcare provider"
     sql: ${TABLE}.provider_street_address ;;
   }
 
   dimension: provider_city {
     type: string
     label: "Provider City"
-    description: "City where the provider is located"
+    description: "City where the healthcare provider is located"
     sql: ${TABLE}.provider_city ;;
   }
 
   dimension: provider_state {
     type: string
     label: "Provider State"
-    description: "State where the provider is located"
+    description: "State where the healthcare provider is located"
     sql: ${TABLE}.provider_state ;;
   }
 
   dimension: provider_zipcode {
-    type: string
+    type: zipcode
     label: "Provider Zipcode"
-    description: "Zipcode of the provider location"
+    description: "Zipcode of the healthcare provider"
     sql: ${TABLE}.provider_zipcode ;;
   }
 
@@ -61,40 +62,40 @@ view: inpatient_charges_2013 {
   dimension: hospital_referral_region_description {
     type: string
     label: "Hospital Referral Region"
-    description: "Description of the hospital referral region"
+    description: "Description of hospital referral region"
     sql: ${TABLE}.hospital_referral_region_description ;;
   }
 
-  # Hidden dimensions for measures
+  # Hidden dimensions for measures (with NULL handling)
   dimension: total_discharges_raw {
-    type: number
     hidden: yes
-    sql: ${TABLE}.total_discharges ;;
+    type: number
+    sql: COALESCE(${TABLE}.total_discharges, 0) ;;
   }
 
   dimension: average_covered_charges_raw {
-    type: number
     hidden: yes
-    sql: ${TABLE}.average_covered_charges ;;
+    type: number
+    sql: COALESCE(${TABLE}.average_covered_charges, 0) ;;
   }
 
   dimension: average_total_payments_raw {
-    type: number
     hidden: yes
-    sql: ${TABLE}.average_total_payments ;;
+    type: number
+    sql: COALESCE(${TABLE}.average_total_payments, 0) ;;
   }
 
   dimension: average_medicare_payments_raw {
-    type: number
     hidden: yes
-    sql: ${TABLE}.average_medicare_payments ;;
+    type: number
+    sql: COALESCE(${TABLE}.average_medicare_payments, 0) ;;
   }
 
   # Measures
   measure: total_discharges {
     type: sum
     label: "Total Discharges"
-    description: "Total number of discharges for the provider and DRG"
+    description: "Total number of discharges"
     sql: ${total_discharges_raw} ;;
     value_format: "#,##0.00"
   }
@@ -102,7 +103,7 @@ view: inpatient_charges_2013 {
   measure: average_covered_charges {
     type: average
     label: "Average Covered Charges"
-    description: "Average covered charges for the provider's discharges"
+    description: "Average amount of covered charges"
     sql: ${average_covered_charges_raw} ;;
     value_format: "#,##0.00"
   }
@@ -110,7 +111,7 @@ view: inpatient_charges_2013 {
   measure: average_total_payments {
     type: average
     label: "Average Total Payments"
-    description: "Average total payments to the provider for the DRG"
+    description: "Average total payments received"
     sql: ${average_total_payments_raw} ;;
     value_format: "#,##0.00"
   }
@@ -118,21 +119,16 @@ view: inpatient_charges_2013 {
   measure: average_medicare_payments {
     type: average
     label: "Average Medicare Payments"
-    description: "Average Medicare payments to the provider"
+    description: "Average Medicare payments received"
     sql: ${average_medicare_payments_raw} ;;
     value_format: "#,##0.00"
-  }
-
-  measure: count {
-    type: count
-    label: "Count of Records"
-    description: "Total count of inpatient charge records"
   }
 
   measure: count_providers {
     type: count_distinct
     label: "Count of Providers"
-    description: "Distinct count of providers"
+    description: "Distinct count of healthcare providers"
     sql: ${provider_id} ;;
+    value_format: "#,##0.00"
   }
 }
