@@ -1,153 +1,191 @@
 # Test Patient Data - Looker Project
 
 ## Overview
-This Looker project provides a comprehensive analytical framework for exploring Medicare inpatient and outpatient charge data from 2013. The project enables analysis of healthcare provider charges, payments, and service volumes across different geographic regions and medical classifications.
+This Looker project provides analytics and reporting capabilities for healthcare provider data and bikeshare system information. The project connects to BigQuery datasets and provides comprehensive views, explores, and dashboards for data analysis.
 
-## Source Data
-The project is connected to a BigQuery database in Google Cloud Platform (GCP) and uses two primary data sources:
-
-### Inpatient Charges 2013
-- **Source Table**: `prj-s-dlp-dq-sandbox-0b3c.EK_test_data.inpatient_charges_2013`
-- **Description**: Contains Medicare inpatient prospective payment system (IPPS) provider summary data for fiscal year 2013
-- **Key Fields**:
-  - Provider information (ID, name, address, city, state, zipcode)
-  - DRG (Diagnosis Related Group) definitions
-  - Hospital referral region descriptions
-  - Total discharges
-  - Average covered charges, total payments, and Medicare payments
-
-### Outpatient Charges 2013
-- **Source Table**: `prj-s-dlp-dq-sandbox-0b3c.EK_test_data.outpatient_charges_2013`
-- **Description**: Contains Medicare outpatient prospective payment system provider summary data for fiscal year 2013
-- **Key Fields**:
-  - Provider information (ID, name, address, city, state, zipcode)
-  - APC (Ambulatory Payment Classification) codes and descriptions
-  - Hospital referral regions
-  - Number of outpatient services
-  - Average estimated submitted charges and total payments
+## Database Connection
+- **Connection Name**: badal_internal_projects
+- **Database Type**: Google BigQuery (GCP)
+- **Project ID**: prj-s-dlp-dq-sandbox-0b3c
+- **Dataset**: EK_test_data
 
 ## Project Structure
 
 ### Folders
-- **Views**: Contains LookML view definitions for data sources
-- **Explores**: Contains explore definitions that join views together
-- **Dashboards**: Contains dashboard definitions for reporting
-- **data_tests**: Contains data quality and validation tests
+- **Views/**: Contains all view files (.view.lkml) that define the data structure and calculations
+- **Explores/**: Contains explore files (.explore.lkml) that define how views are joined together
+- **LookML_Dashboards/**: Contains LookML dashboard files (.dashboard.lookml) for pre-built visualizations
+- **data_tests/**: Contains data quality test files (.lkml)
 
 ### Key Files
 - **manifest.lkml**: Defines project-level constants for table names
-- **test_patient_data.model.lkml**: Main model file with connection, includes, and datagroup definitions
+- **test_patient_data.model.lkml**: Main model file with connection, includes, and datagroup configuration
+
+## Data Sources
+
+### Healthcare Provider Data
+
+#### 1. Inpatient Charges (2013)
+- **Source Table**: `prj-s-dlp-dq-sandbox-0b3c.EK_test_data.inpatient_charges_2013`
+- **View Name**: inpatient_charges_2013
+- **Description**: Contains inpatient hospital charge information including provider details, DRG definitions, discharges, and payment information
+
+**Key Dimensions**:
+- Provider information (ID, name, address, city, state, zipcode)
+- DRG (Diagnosis Related Group) definition
+- Hospital referral region
+
+**Key Measures**:
+- Total discharges
+- Average covered charges
+- Average total payments
+- Average Medicare payments
+- Count of providers
+
+#### 2. Outpatient Charges (2013)
+- **Source Table**: `prj-s-dlp-dq-sandbox-0b3c.EK_test_data.outpatient_charges_2013`
+- **View Name**: outpatient_charges_2013
+- **Description**: Contains outpatient hospital charge information including provider details, APC codes, and payment information
+
+**Key Dimensions**:
+- Provider information (ID, name, address, city, state, zipcode)
+- APC (Ambulatory Payment Classification)
+- APC code (4-digit extracted code)
+- Hospital referral region
+
+**Key Measures**:
+- Outpatient services count
+- Average estimated submitted charges
+- Average total payments
+- Count of providers
+
+### Bikeshare Data
+
+#### 3. Bikeshare Trips
+- **Source Table**: `prj-s-dlp-dq-sandbox-0b3c.EK_test_data.bikeshare_trips`
+- **View Name**: bikeshare_trips
+- **Description**: Austin bikeshare trip information including trip details, bike information, and station data
+
+**Key Dimensions**:
+- Trip ID
+- Subscriber type
+- Bike ID and type
+- Start and end station information
+- Start time (with multiple timeframes: time, date, week, month, year)
+
+**Key Measures**:
+- Total duration in minutes
+- Average duration in minutes
+- Count of trips
+
+#### 4. Bikeshare Stations
+- **Source Table**: `prj-s-dlp-dq-sandbox-0b3c.EK_test_data.bikeshare_stations`
+- **View Name**: bikeshare_stations
+- **Description**: Austin bikeshare station information including location, capacity, and metadata
+
+**Key Dimensions**:
+- Station ID and name
+- Status
+- Location (geographic coordinates for mapping)
+- Address and property type
+- Council district
+- Modified date (with multiple timeframes)
+
+**Key Measures**:
+- Total number of docks
+- Average number of docks
+- Footprint length and width
+- Count of stations
 
 ## Semantic Layer Structure
 
-### Views
-
-#### inpatient_charges_2013.view.lkml
-Provides dimensions and measures for inpatient Medicare data:
-- **Dimensions**: Provider details, geographic information, DRG definitions, hospital referral regions
-- **Measures**: Total discharges, average covered charges, average total payments, average Medicare payments, provider counts
-- **Primary Key**: Composite key of provider_id and drg_definition
-
-#### outpatient_charges_2013.view.lkml
-Provides dimensions and measures for outpatient Medicare data:
-- **Dimensions**: Provider details, geographic information, APC codes, hospital referral regions, extracted APC 4-digit code
-- **Measures**: Total outpatient services, average estimated submitted charges, average total payments, provider counts
-- **Primary Key**: Composite key of provider_id and apc
-- **Special Feature**: `apc_code` dimension extracts the 4-digit code from the beginning of the APC field
-
 ### Explores
 
-#### Inpatient & Outpatient
-- **File**: Explores/inpatient_outpatient.explore.lkml
-- **Base View**: inpatient_charges_2013 (labeled "Inpatient Charges")
-- **Joined View**: outpatient_charges_2013 (labeled "Outpatient Charges")
-- **Join Type**: Left outer join on provider_id
-- **Relationship**: many_to_one (many inpatient records to one outpatient record per provider)
-- **Use Case**: Enables combined analysis of inpatient and outpatient data at the provider level
+#### 1. Inpatient & Outpatient
+- **Explore Name**: inpatient_outpatient
+- **Base View**: inpatient_charges_2013
+- **Joined View**: outpatient_charges_2013
+- **Join Logic**: Left outer join on provider_id
+- **Relationship**: many_to_one
+- **Use Case**: Analyze both inpatient and outpatient charges by provider
 
-### Data Refresh Strategy
+#### 2. Bikeshare Info
+- **Explore Name**: bikeshare_info
+- **Base View**: bikeshare_trips
+- **Joined Views**:
+  - start_station (from bikeshare_stations) - Left outer join on start_station_id
+  - end_station (from bikeshare_stations) - Left outer join on end_station_id (cast as INTEGER)
+- **Relationship**: many_to_one for both joins
+- **Use Case**: Analyze bikeshare trips with detailed station information for both start and end locations
 
-#### Datagroup: week_end
+### Datagroup
+- **Name**: week_end
 - **Description**: Triggers every Monday at 9am Eastern Time
-- **Logic**: SQL-based trigger that fires on Mondays at 9am ET
 - **Cache Duration**: 12 hours
-- **Purpose**: Ensures weekly data refresh while maintaining performance through caching
+- **Purpose**: Automatic cache invalidation and persistent derived table (PDT) rebuilding
 
-## Reports and Dashboards
+## Dashboards
 
-### Provider Metrics Dashboard
-- **File**: Dashboards/provider_metrics.dashboard.lookml
-- **Components**:
-  1. **Total Number of Providers**: Single value tile showing distinct count of providers
-  2. **Outpatient Services by City and Hospital**: Column chart displaying outpatient service volumes segmented by city and hospital referral region
-- **Filters**:
-  - City (provider_city)
-  - Hospital (hospital_referral_region)
-  - Zipcode (provider_zipcode)
-- **Use Cases**:
-  - Monitor provider network size
-  - Analyze service distribution across geographic regions
-  - Identify high-volume service areas
+### 1. Provider Metrics Dashboard
+- **Dashboard Name**: provider_metrics
+- **Explore**: inpatient_outpatient
+- **Purpose**: Monitor healthcare provider metrics and services
+
+**Tiles**:
+1. **Number of Providers**: Single value tile showing total count of providers
+2. **Outpatient Services by City and Hospital**: Column chart displaying outpatient services grouped by city and hospital
+
+**Filters**:
+- City (provider_city)
+- Hospital (hospital_referral_region_description)
+- Zipcode (provider_zipcode)
+
+### 2. Bikeshare Overview Dashboard
+- **Dashboard Name**: bikeshare_overview
+- **Explore**: bikeshare_info
+- **Purpose**: Monitor bikeshare system usage and station information
+
+**Tiles**:
+1. **Total Trips**: Single value showing count of all trips
+2. **Average Trip Duration**: Single value showing average trip duration in minutes
+3. **Total Stations (Start)**: Single value showing count of start stations
+4. **Total Docks Available**: Single value showing total dock capacity
+5. **Bike Station Locations Map**: Geographic map showing all bike station locations
+
+**Filters**:
+- Start Station Name (from start_station view)
+- End Station Name (from end_station view)
+- Subscriber Type
+- Bike Type
 
 ## Data Quality Tests
 
-### Test Files
-- **File**: data_tests/patient_data_tests.lkml
+### Inpatient & Outpatient Tests
+1. **inpatient_provider_zipcode_not_null**: Validates that provider zipcode field in inpatient_charges_2013 contains no NULL values
+2. **outpatient_services_greater_than_1000_by_city**: Validates that outpatient services measure exceeds 1000 when grouped by city
 
-### Test Definitions
-
-#### 1. Inpatient Zipcode Not Null
-- **Test Name**: `inpatient_zipcode_not_null`
-- **Purpose**: Validates that the provider_zipcode field in inpatient_charges_2013 contains no NULL values
-- **Assertion**: Count of records with NULL zipcode should equal 0
-- **Impact**: Ensures geographic analysis integrity
-
-#### 2. Outpatient Services Threshold by City
-- **Test Name**: `outpatient_services_threshold_by_city`
-- **Purpose**: Validates that outpatient_services measure exceeds 1000 for each city
-- **Assertion**: Total outpatient services by city should be greater than 1000
-- **Impact**: Identifies cities with insufficient service volume data
+### Bikeshare Tests
+1. **bikeshare_start_station_id_not_null**: Validates that start_station_id in bikeshare_trips contains no NULL values
+2. **bikeshare_end_station_id_not_null**: Validates that end_station_id in bikeshare_trips contains no NULL values
 
 ## Best Practices Implemented
 
-### Naming Conventions
-- View files use `.view.lkml` extension
-- Explore files use `.explore.lkml` extension
-- Dashboard files use `.dashboard.lookml` extension
-- All files follow Looker naming standards (no spaces or special characters)
+1. **Constants for Table Names**: All table names are defined as constants in manifest.lkml for easy maintenance
+2. **Primary Keys**: Each view has a defined primary key (may be composite) marked as hidden
+3. **NULL Handling**: All measures use COALESCE to convert NULL values to 0 for proper aggregation
+4. **Consistent Formatting**: All measures use value_format: "#,##0.00" for consistent display
+5. **Hidden Raw Dimensions**: Measures are based on hidden dimensions to ensure proper NULL handling
+6. **Labels and Descriptions**: All dimensions and measures include descriptive labels and descriptions
+7. **Time Dimensions**: Date/timestamp fields use dimension_group with type: time for automatic timeframe generation
+8. **Geographic Dimensions**: Location fields properly configured for map visualizations using type: location or type: zipcode
 
-### LookML Standards
-- All dimensions and measures include labels and descriptions
-- Measures are based on hidden raw dimensions for consistency
-- All measures use standardized value format: `#,##0.00`
-- Primary keys defined and hidden in all views
-- Table names defined as constants in manifest file for easy maintenance
-- Proper use of backticks for BigQuery table references
+## Getting Started
 
-### Performance Optimization
-- Datagroup implementation for intelligent caching
-- Primary keys defined for optimization
-- Appropriate use of aggregate functions in measures
-
-## Usage Guidelines
-
-### Analyzing Provider Data
-1. Use the "Inpatient & Outpatient" explore to analyze combined provider metrics
-2. Filter by geographic dimensions (city, state, zipcode) for regional analysis
-3. Compare inpatient vs outpatient metrics across providers
-4. Use the Provider Metrics Dashboard for high-level monitoring
-
-### Extending the Project
-1. Add new views in the `Views` folder following the established pattern
-2. Create new explores in the `Explores` folder
-3. Define any new table constants in `manifest.lkml`
-4. Add data tests to validate new data sources
-
-## Technical Requirements
-- Looker instance with BigQuery connection configured
-- Connection name: `badal_internal_projects`
-- Access to GCP project: `prj-s-dlp-dq-sandbox-0b3c`
-- Access to dataset: `EK_test_data`
+1. Ensure you have access to the BigQuery connection "badal_internal_projects"
+2. Navigate to the Explores section to begin ad-hoc analysis
+3. Use the pre-built dashboards for quick insights
+4. Run data tests regularly to ensure data quality
 
 ## Support and Maintenance
-For questions or issues with this project, please contact your Looker administrator or data team.
+
+For questions or issues with this Looker project, please contact your Looker administrator or data team.

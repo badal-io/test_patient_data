@@ -1,31 +1,43 @@
 - dashboard: provider_metrics
-  title: Provider Metrics Dashboard
+  title: Provider Metrics
   layout: newspaper
   preferred_viewer: dashboards-next
+  description: "Dashboard for Inpatient & Outpatient provider metrics"
 
   elements:
-  - name: total_providers
-    title: Total Number of Providers
+  - title: Number of Providers
+    name: Number of Providers
     model: test_patient_data
     explore: inpatient_outpatient
     type: single_value
-    fields: [outpatient_charges_2013.count_providers]
+    fields: [inpatient_outpatient.count_providers]
     limit: 500
+    custom_color_enabled: true
+    show_single_value_title: true
+    show_comparison: false
+    comparison_type: value
+    comparison_reverse_colors: false
+    show_comparison_label: true
+    enable_conditional_formatting: false
+    conditional_formatting_include_totals: false
+    conditional_formatting_include_nulls: false
+    value_format: "#,##0"
     listen:
-      City: outpatient_charges_2013.provider_city
-      Hospital: outpatient_charges_2013.hospital_referral_region
-      Zipcode: outpatient_charges_2013.provider_zipcode
+      City: inpatient_outpatient.provider_city
+      Hospital: inpatient_outpatient.hospital_referral_region_description
+      Zipcode: inpatient_outpatient.provider_zipcode
     row: 0
     col: 0
     width: 24
     height: 4
 
-  - name: outpatient_services_by_city_hospital
-    title: Outpatient Services by City and Hospital
+  - title: Outpatient Services by City and Hospital
+    name: Outpatient Services by City and Hospital
     model: test_patient_data
     explore: inpatient_outpatient
     type: looker_column
-    fields: [outpatient_charges_2013.provider_city, outpatient_charges_2013.hospital_referral_region, outpatient_charges_2013.outpatient_services]
+    fields: [inpatient_outpatient.provider_city, inpatient_outpatient.hospital_referral_region_description,
+      outpatient_charges_2013.outpatient_services]
     sorts: [outpatient_charges_2013.outpatient_services desc]
     limit: 500
     x_axis_gridlines: false
@@ -55,10 +67,17 @@
     show_totals_labels: false
     show_silhouette: false
     totals_color: "#808080"
+    y_axes: [{label: Outpatient Services, orientation: left, series: [{axisId: outpatient_charges_2013.outpatient_services,
+            id: outpatient_charges_2013.outpatient_services, name: Outpatient Services}],
+        showLabels: true, showValues: true, unpinAxis: false, tickDensity: default,
+        tickDensityCustom: 5, type: linear}]
+    x_axis_label: City / Hospital
+    series_types: {}
+    defaults_version: 1
     listen:
-      City: outpatient_charges_2013.provider_city
-      Hospital: outpatient_charges_2013.hospital_referral_region
-      Zipcode: outpatient_charges_2013.provider_zipcode
+      City: inpatient_outpatient.provider_city
+      Hospital: inpatient_outpatient.hospital_referral_region_description
+      Zipcode: inpatient_outpatient.provider_zipcode
     row: 4
     col: 0
     width: 24
@@ -77,7 +96,7 @@
     model: test_patient_data
     explore: inpatient_outpatient
     listens_to_filters: []
-    field: outpatient_charges_2013.provider_city
+    field: inpatient_outpatient.provider_city
 
   - name: Hospital
     title: Hospital
@@ -91,7 +110,7 @@
     model: test_patient_data
     explore: inpatient_outpatient
     listens_to_filters: []
-    field: outpatient_charges_2013.hospital_referral_region
+    field: inpatient_outpatient.hospital_referral_region_description
 
   - name: Zipcode
     title: Zipcode
@@ -105,4 +124,4 @@
     model: test_patient_data
     explore: inpatient_outpatient
     listens_to_filters: []
-    field: outpatient_charges_2013.provider_zipcode
+    field: inpatient_outpatient.provider_zipcode
