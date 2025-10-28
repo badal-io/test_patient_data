@@ -1,210 +1,221 @@
 # Test Patient Data - Looker Project
 
-## Overview
-This Looker project (`test_patient_data`) provides a comprehensive semantic layer for analyzing healthcare provider performance metrics and bikeshare usage data. The project connects to BigQuery and combines inpatient charges, outpatient charges, and bikeshare data for in-depth business intelligence.
+## Project Overview
+
+The Test Patient Data project is a Looker semantic layer built on BigQuery that provides analytics and reporting capabilities for patient healthcare data and bikeshare trip information. This project enables organizations to analyze inpatient and outpatient charges, as well as track bikeshare usage patterns.
+
+## Data Architecture
+
+### Connection
+- **Database**: Google BigQuery (GCP)
+- **Project ID**: `badal_internal_projects`
+
+### Database Structure
+
+The project integrates data from two primary sources:
+
+#### 1. Patient Healthcare Data
+Located in: `prj-s-dlp-dq-sandbox-0b3c.EK_test_data`
+
+- **inpatient_charges_2013**: Contains inpatient hospital charges and metrics
+  - Provider information (ID, name, location details)
+  - DRG (Diagnosis Related Group) definitions
+  - Hospital referral region descriptions
+  - Metrics: Total discharges, average covered charges, total payments, Medicare payments
+
+- **outpatient_charges_2013**: Contains outpatient service charges and metrics
+  - Provider information (ID, name, location details)
+  - APC (Ambulatory Payment Classification) codes
+  - Hospital referral region
+  - Metrics: Outpatient services count, estimated submitted charges, total payments
+
+#### 2. Bikeshare Data
+Located in: `bigquery-public-data.austin_bikeshare`
+
+- **bikeshare_trips**: Individual trip records
+  - Trip and bike IDs
+  - Subscriber type and bike type information
+  - Start and end station references
+  - Trip start timestamp and duration
+
+- **bikeshare_stations**: Station information and locations
+  - Station identifiers and names
+  - Geographic location (latitude/longitude)
+  - Physical characteristics (number of docks, footprint dimensions)
+  - Status and address information
+
+## Semantic Layer Structure
+
+### Views (4 total)
+
+1. **inpatient_charges_2013.view.lkml**
+   - Provides dimensions for provider and DRG details
+   - Includes measures for discharges and payment metrics
+   - Supports analysis of inpatient costs by provider and region
+
+2. **outpatient_charges_2013.view.lkml**
+   - Provides dimensions for provider and APC code details
+   - Includes custom dimension: `apc_code` (4-digit code extracted from full APC)
+   - Includes measures for outpatient services and charges
+   - Enables analysis of outpatient services by provider and payment type
+
+3. **bikeshare_trips.view.lkml**
+   - Provides dimensions for trip, bike, and subscriber details
+   - Includes time-based dimensions for trip start times
+   - Includes measures for trip count and duration metrics
+   - Enables analysis of bikeshare usage patterns
+
+4. **bikeshare_stations.view.lkml**
+   - Provides dimensions for station details and location data
+   - Includes location dimension for geographic mapping
+   - Includes measures for dock capacity and footprint metrics
+   - Enables station-level analysis and mapping visualizations
+
+### Explores (2 total)
+
+#### 1. Inpatient & Outpatient Explore
+- **Base View**: inpatient_charges_2013
+- **Join**: outpatient_charges_2013
+- **Join Type**: LEFT OUTER
+- **Relationship**: many_to_one
+- **Join Key**: provider_id
+- **Purpose**: Analyze combined inpatient and outpatient charges by provider
+
+#### 2. Bikeshare Info Explore
+- **Base View**: bikeshare_trips
+- **Joins**:
+  - `start_stations` (bikeshare_stations) - LEFT OUTER, many_to_one
+  - `end_stations` (bikeshare_stations) - LEFT OUTER, many_to_one
+- **Join Keys**:
+  - Start: bikeshare_trips.start_station_id = start_stations.station_id
+  - End: CAST(bikeshare_trips.end_station_id AS INTEGER) = end_stations.station_id
+- **Purpose**: Analyze bikeshare trips with origin and destination station details
+
+## Reporting & Dashboards
+
+### 1. Provider Metrics Dashboard
+- **Explore**: Inpatient & Outpatient
+- **Tiles**:
+  1. **Number of Providers** (Single Value)
+     - Counts unique providers
+  2. **City, Hospital and Outpatient Services** (Column Chart)
+     - Visualizes outpatient services by city and hospital referral region
+- **Filters**:
+  - Provider City
+  - Hospital Referral Region
+  - Provider Zipcode
+
+### 2. Bikeshare Overview Dashboard
+- **Explore**: Bikeshare Info
+- **Tiles**:
+  1. **Total Number of Trips** (Single Value)
+  2. **Average Trip Duration** (Single Value)
+  3. **Total Number of Stations** (Single Value)
+  4. **Trips by End Station** (Treemap)
+     - Hierarchical view of trip distribution by end station
+  5. **Bike Type and Subscriber Type Report** (Table)
+     - Shows trip count and total duration by bike and subscriber type
+     - Theme: Contemporary with merged dimensions and headers
+  6. **Trip Distribution by End Station** (Histogram)
+     - Color: #e83461 (custom pink color)
+  7. **Bike Stations Map** (Map Visualization)
+     - Geographic plot of station locations with trip metrics
+- **Filters**:
+  - Start Station Name
+  - End Station Name
+  - Subscriber Type
+  - Bike Type
+
+## Data Governance
+
+### Datagroup Configuration
+- **Name**: week_end
+- **Description**: Triggers every Monday at 9am Eastern Time
+- **Trigger**: SQL-based trigger checking for Mondays at 9am ET
+- **Cache Duration**: 12 hours
+- **Purpose**: Ensures data freshness with controlled cache invalidation
+
+### Data Tests
+
+#### Patient Data Tests (patient_data_tests.lkml)
+1. **provider_zipcode_not_null**
+   - Validates that provider zipcode field contains no NULL values
+   - Critical for accurate geographic analysis
+
+2. **outpatient_services_greater_than_1000_by_city**
+   - Validates that outpatient services exceed 1000 when aggregated by city
+   - Ensures data quality and expected minimum thresholds
+
+#### Bikeshare Data Tests (bikeshare_data_tests.lkml)
+1. **start_station_id_not_null**
+   - Validates that start_station_id field contains no NULL values
+   - Critical for trip origin tracking
+
+2. **end_station_id_not_null**
+   - Validates that end_station_id field contains no NULL values
+   - Critical for trip destination tracking
 
 ## Project Structure
 
-### Database Connection
-- **Connection**: `badal_internal_projects`
-- **Database**: Google BigQuery (GCP)
-- **Project**: `prj-s-dlp-dq-sandbox-0b3c`
-
-### Folder Organization
-
 ```
 test_patient_data/
-├── Views/                      # Data view definitions
-├── Explores/                   # Explore configurations
-├── LookML_Dashboards/         # LookML dashboards
-├── data_tests/                # Data quality tests
-├── manifest.lkml              # Project constants
-├── test_patient_data.model.lkml # Model file with includes and datagroup
-└── README.md                  # This file
+├── manifest.lkml                    # Table name constants
+├── test_patient_data.model.lkml     # Main model file with includes and datagroup
+├── Views/
+│   ├── inpatient_charges_2013.view.lkml
+│   ├── outpatient_charges_2013.view.lkml
+│   ├── bikeshare_trips.view.lkml
+│   └── bikeshare_stations.view.lkml
+├── Explores/
+│   ├── inpatient_outpatient.explore.lkml
+│   └── bikeshare_info.explore.lkml
+├── LookML_Dashboards/
+│   ├── provider_metrics.dashboard.lookml
+│   └── bikeshare_overview.dashboard.lookml
+├── data_tests/
+│   ├── patient_data_tests.lkml
+│   └── bikeshare_data_tests.lkml
+└── README.md                        # This file
 ```
 
-## Views
+## Key Features
 
-### 1. **inpatient_charges_2013**
-Source table: `prj-s-dlp-dq-sandbox-0b3c.EK_test_data.inpatient_charges_2013`
-
-Provides inpatient hospital charge data including:
-- **Dimensions**: Provider information (ID, name, address, city, state, zipcode), DRG definition, hospital referral region
-- **Measures**: Total discharges, average covered charges, average total payments, average Medicare payments
-
-### 2. **outpatient_charges_2013**
-Source table: `prj-s-dlp-dq-sandbox-0b3c.EK_test_data.outpatient_charges_2013`
-
-Provides outpatient hospital charge data including:
-- **Dimensions**: Provider information (ID, name, address, city, state, zipcode), APC (Ambulatory Payment Classification), APC code (4-digit extracted), hospital referral region
-- **Measures**: Outpatient services count, average estimated submitted charges, average total payments
-
-### 3. **bikeshare_trips**
-Source table: `prj-s-dlp-dq-sandbox-0b3c.EK_test_data.bikeshare_trips`
-
-Provides bikeshare trip data including:
-- **Dimensions**: Trip ID, subscriber type, bike ID, bike type, start/end station names and IDs
-- **Dimension Groups**: Start time (with timeframes: time, date, week, month, raw)
-- **Measures**: Duration in minutes, total duration, count of trips
-
-### 4. **bikeshare_stations**
-Source table: `bigquery-public-data.austin_bikeshare.bikeshare_stations`
-
-Provides bikeshare station master data including:
-- **Dimensions**: Station ID, name, status, address, alternate name, city asset number, property type, power type, notes, council district, image URL
-- **Location**: Geographic coordinates for map visualization
-- **Dimension Groups**: Modified date (with timeframes: time, date, week, month, raw)
-- **Measures**: Number of docks, footprint length, footprint width
-
-## Semantic Layer Configuration
-
-### Datagroup: week_end
-- **Description**: Triggers every Monday at 9am Eastern Time
-- **Cache Duration**: 12 hours
-- **Purpose**: Ensures data freshness weekly while maintaining performance through caching
-
-### Table Constants (manifest.lkml)
-The following constants are defined for easy reference and table name management:
-- `inpatient_charges_table`: BigQuery table for inpatient charges
-- `outpatient_charges_table`: BigQuery table for outpatient charges
-- `bikeshare_trips_table`: BigQuery table for bikeshare trips
-- `bikeshare_stations_table`: Austin bikeshare public data stations table
-
-## Explores
-
-### 1. **Inpatient & Outpatient**
-Combines inpatient and outpatient charges data with a left outer join on provider_id.
-
-**Join Logic**:
-- Base view: `inpatient_charges_2013`
-- Joined view: `outpatient_charges_2013`
-- Relationship: Many-to-one
-
-**Use Cases**:
-- Compare inpatient vs. outpatient charges
-- Analyze provider-specific charge patterns
-- Benchmark hospital performance
-
-### 2. **Bikeshare Info**
-Combines bikeshare trips with station data using two separate joins for start and end stations.
-
-**Join Logic**:
-- Base view: `bikeshare_trips`
-- Start stations join: `bikeshare_stations` (aliased as `bikeshare_stations_start`)
-- End stations join: `bikeshare_stations` (aliased as `bikeshare_stations_end`)
-- Join type: Left outer
-- Relationship: Many-to-one
-
-**Use Cases**:
-- Analyze bikeshare usage patterns
-- Identify popular stations
-- Monitor subscriber types and bike preferences
-
-## Dashboards
-
-### 1. **Provider Metrics**
-Business dashboard for explore: `Inpatient & Outpatient`
-
-**Tiles**:
-1. **Number of Providers** (Single Value)
-   - Shows total count of unique providers
-
-2. **Services by City and Hospital** (Column Chart)
-   - Visualizes outpatient services across cities and hospital referral regions
-   - Allows drill-down by city and hospital region
-
-**Filters**:
-- City (provider_city)
-- Hospital (hospital_referral_region_description)
-- Zipcode (provider_zipcode)
-
-### 2. **Bikeshare Overview**
-Business dashboard for explore: `Bikeshare Info`
-
-**Tiles**:
-1. **Total Trips** (Single Value) - Count of all trips
-2. **Average Trip Duration** (Single Value) - Average duration in minutes
-3. **Total Stations** (Single Value) - Count of unique stations
-4. **Trips by Subscriber Type** (Single Value) - Trip count by subscriber segment
-5. **Station Locations** (Map) - Geographic visualization of all bikeshare stations
-
-**Filters**:
-- Start Station Name
-- End Station Name
-- Subscriber Type
-- Bike Type
-
-## Data Tests
-
-### Explore 1: Inpatient & Outpatient Tests
-
-1. **inpatient_provider_zipcode_not_null**
-   - Validates that all provider zipcodes in inpatient_charges_2013 are non-null
-   - Prevents data quality issues in geographic filtering
-
-2. **outpatient_services_by_city_gt_1000**
-   - Ensures outpatient services count exceeds 1000 per city
-   - Validates data completeness and accuracy
-
-### Explore 2: Bikeshare Tests
-
-1. **bikeshare_start_station_id_not_null**
-   - Validates that all start station IDs are non-null
-   - Ensures trip data integrity for joins
-
-2. **bikeshare_end_station_id_not_null**
-   - Validates that all end station IDs are non-null
-   - Ensures complete trip routing information
-
-## Key Design Decisions
-
-### Primary Keys
-- Composite keys added to all views for uniqueness
-- Hidden from users but used internally for proper aggregation
-
-### Measure Design
-- All measures use hidden dimensions internally
-- NULL values coerced to 0 to ensure proper aggregation
-- Standard value format: `#,##0.00` for currency/decimal values
+### Dimension & Measure Best Practices
+- All dimensions and measures include descriptive labels and descriptions
+- Measures are defined as hidden dimensions first, then exposed as measures
+- NULL values are handled appropriately (converted to 0 for aggregations)
+- All measure values use consistent formatting: `#,##0.00`
+- Primary keys are defined for each view and marked as hidden
+- Location dimensions support geographic mapping visualizations
 
 ### Naming Conventions
-- Follows Looker best practices
-- File extensions: `.view.lkml`, `.explore.lkml`, `.dashboard.lookml`
-- Descriptive labels and descriptions for all fields
+- Views named after source tables with descriptive suffixes
+- Explores use clear, business-friendly names
+- Dashboards follow naming convention: `{entity}_{metric_type}.dashboard.lookml`
+- Data test files organized by subject area
 
-### Time Dimensions
-- `bikeshare_trips`: Start time with standard timeframes
-- `bikeshare_stations`: Modified date with standard timeframes
-- Enables time-based analysis and trend visualization
+## Usage & Recommendations
 
-## CI/CD Pipeline
+### For Analysts
+- Use the **Provider Metrics Dashboard** for healthcare cost analysis and provider performance
+- Use the **Bikeshare Overview Dashboard** for transportation usage patterns and station analysis
+- Leverage filters for focused analysis on specific regions, providers, or time periods
 
-GitHub Actions workflow validates the project on every commit:
-1. **LookML Validation**: Syntax and structure validation via Looker API
-2. **SQL Validation**: Executes actual SQL against BigQuery database
+### For Administrators
+- Monitor data test results regularly to ensure data quality
+- Review cache performance based on query patterns (12-hour cache with Monday 9am triggers)
+- Update manifest.lkml if source table locations change
 
-See `.github/workflows/` for pipeline configuration details.
+## Dependencies & Versions
 
-## Getting Started
+- **Looker Version**: Compatible with Looker 7.0+
+- **BigQuery**: Standard SQL dialect
+- **LookML**: Standard LookML syntax
 
-1. **Install Looker CLI**: Ensure the Looker CLI is installed
-2. **Push to Looker**: Use `lookml push` to deploy to your Looker instance
-3. **Configure Secrets**: Add required GitHub secrets for CI/CD:
-   - `LOOKER_BASE_URL`
-   - `LOOKER_CLIENT_ID`
-   - `LOOKER_CLIENT_SECRET`
-   - `GCP_PROJECT_ID`
-   - `GCP_CREDENTIALS` (JSON key)
+## Future Enhancements
 
-## Support & Development
-
-- All LookML files are version controlled in Git
-- Follow branch-based development workflow
-- Create feature branches for new dashboards/explores
-- Run data tests before merging to production
-
-## Documentation Standards
-
-- All views, explores, and measures include descriptive labels and descriptions
-- Dashboard documentation is embedded in dashboard definitions
-- Field definitions follow a consistent format for clarity
+Potential areas for expansion:
+- Additional time-based dimensions for trend analysis
+- More complex derived tables for advanced metrics
+- Integration with additional healthcare datasets
+- Enhanced geographic analysis with multi-layer mapping

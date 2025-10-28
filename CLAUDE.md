@@ -267,8 +267,22 @@ Build a lookML dashboard that has
 ## Dashboard 2
 for Explore 2:
 Build a lookML dashboard that has
-    * 4 tiles with general information about the data
-    * the 5th tile make a map tile that shows locations of all bike stations
+    * Single tiles at the top: Total Number of Trips, Average trip duration, Total Station.
+    * Tile 1: a treemap chart
+        * how it can be done can be found here: https://cloud.google.com/looker/docs/treemap
+        * Dimension: End Station Name
+        * Measure: Count of Trips
+    * Tile 2: a Table(Report)
+        * Fields: Bike Type, Subscriber Type, Count of Trips, Total Durantion (Minutes)
+        * Viz settings:
+            * Theme: Contemporary
+            * Merge Dims
+            * Merge Headers
+    * Tile 3: Histogram
+        * Fields: End Station name, Count of Trips
+        * Color: #e83461, Color on Hover: #76ff72
+
+    * the 4th tile make a map tile that shows locations of all bike stations
     * filters:
         * Start station name (take it from the joined view for stations not from trip view)
         * End station name (take it from the joined view for stations not from trip view)
@@ -291,20 +305,6 @@ Generate a Readme.md file with the information about the project:
 * structure of the semantic layer
 * what reports are defined
 * etc
-
-# Add CI/CD pipeline to be executed in GitHub
-I would like you to add a ci/cd pipeline in a form of GitHub actions
-
-Examples of a ci/cd pipeline with the steps that I want:
-* the main workflow file: https://github.com/badal-io/bi_sandbox/blob/master/.github/workflows/lookml-validation.yml
-* Steps:
-    * LookML syntax validation using Looker API: https://github.com/badal-io/bi_sandbox/blob/master/.github/scripts/looker-validator.py
-    * Tests actual SQL execution against databases: https://github.com/badal-io/bi_sandbox/blob/master/.github/scripts/sql-execution-validator.py
-* add a config file like this https://github.com/badal-io/bi_sandbox/blob/master/.github/config/looker-config.ini.template
-
-so I want for the pipeline to have only two steps: LookML validation and SQL validation
-
-I'll add GitHub secrets to github. 
 
 # Rules/Best Practices
 

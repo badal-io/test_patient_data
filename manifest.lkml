@@ -1,17 +1,17 @@
-project_name: "test_patient_data"
+## Constants for table names
 
-constant: inpatient_charges_table {
+constant: inpatient_charges_2013_table {
   value: "prj-s-dlp-dq-sandbox-0b3c.EK_test_data.inpatient_charges_2013"
   export: override_required
 }
 
-constant: outpatient_charges_table {
+constant: outpatient_charges_2013_table {
   value: "prj-s-dlp-dq-sandbox-0b3c.EK_test_data.outpatient_charges_2013"
   export: override_required
 }
 
 constant: bikeshare_trips_table {
-  value: "prj-s-dlp-dq-sandbox-0b3c.EK_test_data.bikeshare_trips"
+  value: "bigquery-public-data.austin_bikeshare.bikeshare_trips"
   export: override_required
 }
 
