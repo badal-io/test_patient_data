@@ -1,9 +1,9 @@
 view: bikeshare_stations {
   sql_table_name: `@{bikeshare_stations_table}` ;;
+  label: "Bikeshare Stations"
 
-  # Primary Key (hidden)
+  # Primary Key - Hidden
   dimension: station_id {
-    hidden: no
     primary_key: yes
     type: number
     label: "Station ID"
@@ -14,24 +14,24 @@ view: bikeshare_stations {
   # Dimensions
   dimension: name {
     type: string
-    label: "Station Name"
-    description: "Name of the bike station"
+    label: "Name"
+    description: "Station name"
     sql: ${TABLE}.name ;;
   }
 
   dimension: status {
     type: string
     label: "Status"
-    description: "Status of the station"
+    description: "Current status of the station"
     sql: ${TABLE}.status ;;
   }
 
   dimension: location {
     type: location
     label: "Location"
-    description: "Geographic location of the station"
-    sql_latitude: CAST(REGEXP_EXTRACT(${TABLE}.location, r'(\-?\d+\.\d+),') AS FLOAT64) ;;
-    sql_longitude: CAST(REGEXP_EXTRACT(${TABLE}.location, r',\s*(\-?\d+\.\d+)') AS FLOAT64) ;;
+    description: "Geographic coordinates of the station"
+    sql_latitude: CAST(SPLIT(${TABLE}.location, ',')[SAFE.OFFSET(0)] AS FLOAT64) ;;
+    sql_longitude: CAST(SPLIT(${TABLE}.location, ',')[SAFE.OFFSET(1)] AS FLOAT64) ;;
   }
 
   dimension: address {
@@ -58,14 +58,14 @@ view: bikeshare_stations {
   dimension: property_type {
     type: string
     label: "Property Type"
-    description: "Type of property where the station is located"
+    description: "Type of property where station is located"
     sql: ${TABLE}.property_type ;;
   }
 
   dimension: power_type {
     type: string
     label: "Power Type"
-    description: "Type of power supply for the station"
+    description: "Type of power available at the station"
     sql: ${TABLE}.power_type ;;
   }
 
@@ -79,7 +79,7 @@ view: bikeshare_stations {
   dimension: council_district {
     type: number
     label: "Council District"
-    description: "City council district of the station"
+    description: "City council district where station is located"
     sql: ${TABLE}.council_district ;;
   }
 
@@ -90,78 +90,61 @@ view: bikeshare_stations {
     sql: ${TABLE}.image ;;
   }
 
-  # Dimension group for modified_date
+  # Time Dimension Group
   dimension_group: modified {
     type: time
     label: "Modified"
-    description: "Last modification timestamp"
     timeframes: [time, date, week, month, raw]
     sql: ${TABLE}.modified_date ;;
   }
 
-  dimension: modified_month_year {
-    group_label: "Modified Date"
-    label: "Month + Year"
-    type: string
-    sql: DATE_TRUNC(${modified_date}, MONTH) ;;
-    html: {{ rendered_value | date: "%B %Y" }};;
-  }
-
-  # Hidden dimensions for measures
+  # Hidden Dimensions for Measures
   dimension: _number_of_docks {
     hidden: yes
     type: number
-    sql: COALESCE(${TABLE}.number_of_docks, 0) ;;
+    sql: ${TABLE}.number_of_docks ;;
   }
 
   dimension: _footprint_length {
     hidden: yes
     type: number
-    sql: COALESCE(${TABLE}.footprint_length, 0) ;;
+    sql: ${TABLE}.footprint_length ;;
   }
 
   dimension: _footprint_width {
     hidden: yes
     type: number
-    sql: COALESCE(${TABLE}.footprint_width, 0) ;;
+    sql: ${TABLE}.footprint_width ;;
   }
 
   # Measures
   measure: number_of_docks {
     type: sum
     label: "Total Number of Docks"
-    description: "Sum of number of docks across all stations"
-    sql: ${_number_of_docks} ;;
+    description: "Total number of bike docks across all records"
+    sql: COALESCE(${_number_of_docks}, 0) ;;
     value_format: "#,##0.00"
   }
 
   measure: footprint_length {
     type: sum
     label: "Total Footprint Length"
-    description: "Sum of footprint length"
-    sql: ${_footprint_length} ;;
+    description: "Total length of station footprint"
+    sql: COALESCE(${_footprint_length}, 0) ;;
     value_format: "#,##0.00"
   }
 
   measure: footprint_width {
-    type: sum
-    label: "Total Footprint Width"
-    description: "Sum of footprint width"
-    sql: ${_footprint_width} ;;
-    value_format: "#,##0.00"
-  }
-
-  measure: average_footprint_width {
     type: average
     label: "Average Footprint Width"
-    description: "Average of footprint width"
-    sql: ${_footprint_width} ;;
+    description: "Average width of station footprint"
+    sql: COALESCE(${_footprint_width}, 0) ;;
     value_format: "#,##0.00"
   }
 
   measure: count {
     type: count
-    label: "Count of Stations"
-    description: "Count of bike stations"
+    label: "Count"
+    description: "Number of stations"
   }
 }

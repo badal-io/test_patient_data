@@ -1,9 +1,9 @@
 view: bikeshare_trips {
   sql_table_name: `@{bikeshare_trips_table}` ;;
+  label: "Bikeshare Trips"
 
-  # Primary Key (hidden)
+  # Primary Key - Hidden
   dimension: trip_id {
-    hidden: no
     primary_key: yes
     type: string
     label: "Trip ID"
@@ -34,7 +34,7 @@ view: bikeshare_trips {
   }
 
   dimension: start_station_id {
-    type: number
+    type: string
     label: "Start Station ID"
     description: "Numeric reference for start station"
     sql: ${TABLE}.start_station_id ;;
@@ -61,50 +61,41 @@ view: bikeshare_trips {
     sql: ${TABLE}.end_station_name ;;
   }
 
-  # Dimension group for start_time
+  # Time Dimension Group
   dimension_group: start {
     type: time
     label: "Start"
-    description: "Start time of trip"
     timeframes: [time, date, week, month, raw]
     sql: ${TABLE}.start_time ;;
   }
 
-  dimension: start_month_year {
-    group_label: "Start Date"
-    label: "Month + Year"
-    type: string
-    sql: DATE_TRUNC(${start_date}, MONTH) ;;
-    html: {{ rendered_value | date: "%B %Y" }};;
-  }
-
-  # Hidden dimension for measures
+  # Hidden Dimension for Measures
   dimension: _duration_minutes {
     hidden: yes
     type: number
-    sql: COALESCE(${TABLE}.duration_minutes, 0) ;;
+    sql: ${TABLE}.duration_minutes ;;
   }
 
   # Measures
   measure: duration_minutes {
-    type: sum
-    label: "Total Duration (Minutes)"
-    description: "Total time of all trips in minutes"
-    sql: ${_duration_minutes} ;;
+    type: average
+    label: "Average Duration (minutes)"
+    description: "Average duration of trips in minutes"
+    sql: COALESCE(${_duration_minutes}, 0) ;;
     value_format: "#,##0.00"
   }
 
-  measure: average_duration_minutes {
-    type: average
-    label: "Average Duration (Minutes)"
-    description: "Average duration of trips in minutes"
-    sql: ${_duration_minutes} ;;
+  measure: total_duration_minutes {
+    type: sum
+    label: "Total Duration (minutes)"
+    description: "Total duration of all trips in minutes"
+    sql: COALESCE(${_duration_minutes}, 0) ;;
     value_format: "#,##0.00"
   }
 
   measure: count {
     type: count
-    label: "Count of Trips"
-    description: "Count of bike trips"
+    label: "Count"
+    description: "Number of trips"
   }
 }
