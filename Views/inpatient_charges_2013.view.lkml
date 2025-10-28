@@ -1,19 +1,20 @@
 view: inpatient_charges_2013 {
-  sql_table_name: `@{inpatient_charges_table}` ;;
+  sql_table_name: `@{inpatient_charges_2013_table}` ;;
 
-  # Primary Key
-  dimension: primary_key {
-    primary_key: yes
+  # Primary Key (hidden)
+  dimension: id {
     hidden: yes
+    primary_key: yes
     type: string
     sql: CONCAT(${provider_id}, '-', ${drg_definition}) ;;
   }
 
   # Dimensions
   dimension: provider_id {
+    primary_key: no
     type: string
     label: "Provider ID"
-    description: "Unique identifier for healthcare provider"
+    description: "Unique identifier for the healthcare provider"
     sql: ${TABLE}.provider_id ;;
   }
 
@@ -27,28 +28,28 @@ view: inpatient_charges_2013 {
   dimension: provider_street_address {
     type: string
     label: "Provider Street Address"
-    description: "Street address of the healthcare provider"
+    description: "Street address of the provider"
     sql: ${TABLE}.provider_street_address ;;
   }
 
   dimension: provider_city {
     type: string
     label: "Provider City"
-    description: "City where the healthcare provider is located"
+    description: "City where the provider is located"
     sql: ${TABLE}.provider_city ;;
   }
 
   dimension: provider_state {
     type: string
     label: "Provider State"
-    description: "State where the healthcare provider is located"
+    description: "State where the provider is located"
     sql: ${TABLE}.provider_state ;;
   }
 
   dimension: provider_zipcode {
     type: zipcode
     label: "Provider Zipcode"
-    description: "Zipcode of the healthcare provider"
+    description: "Zipcode of the provider location"
     sql: ${TABLE}.provider_zipcode ;;
   }
 
@@ -62,30 +63,30 @@ view: inpatient_charges_2013 {
   dimension: hospital_referral_region_description {
     type: string
     label: "Hospital Referral Region"
-    description: "Description of hospital referral region"
+    description: "Description of the hospital referral region"
     sql: ${TABLE}.hospital_referral_region_description ;;
   }
 
-  # Hidden dimensions for measures (with NULL handling)
-  dimension: total_discharges_raw {
+  # Hidden dimensions for measures
+  dimension: _total_discharges {
     hidden: yes
     type: number
     sql: COALESCE(${TABLE}.total_discharges, 0) ;;
   }
 
-  dimension: average_covered_charges_raw {
+  dimension: _average_covered_charges {
     hidden: yes
     type: number
     sql: COALESCE(${TABLE}.average_covered_charges, 0) ;;
   }
 
-  dimension: average_total_payments_raw {
+  dimension: _average_total_payments {
     hidden: yes
     type: number
     sql: COALESCE(${TABLE}.average_total_payments, 0) ;;
   }
 
-  dimension: average_medicare_payments_raw {
+  dimension: _average_medicare_payments {
     hidden: yes
     type: number
     sql: COALESCE(${TABLE}.average_medicare_payments, 0) ;;
@@ -95,40 +96,38 @@ view: inpatient_charges_2013 {
   measure: total_discharges {
     type: sum
     label: "Total Discharges"
-    description: "Total number of discharges"
-    sql: ${total_discharges_raw} ;;
+    description: "Sum of total discharges"
+    sql: ${_total_discharges} ;;
     value_format: "#,##0.00"
   }
 
   measure: average_covered_charges {
     type: average
     label: "Average Covered Charges"
-    description: "Average amount of covered charges"
-    sql: ${average_covered_charges_raw} ;;
+    description: "Average of covered charges"
+    sql: ${_average_covered_charges} ;;
     value_format: "#,##0.00"
   }
 
   measure: average_total_payments {
     type: average
     label: "Average Total Payments"
-    description: "Average total payments received"
-    sql: ${average_total_payments_raw} ;;
+    description: "Average of total payments"
+    sql: ${_average_total_payments} ;;
     value_format: "#,##0.00"
   }
 
   measure: average_medicare_payments {
     type: average
     label: "Average Medicare Payments"
-    description: "Average Medicare payments received"
-    sql: ${average_medicare_payments_raw} ;;
+    description: "Average of Medicare payments"
+    sql: ${_average_medicare_payments} ;;
     value_format: "#,##0.00"
   }
 
-  measure: count_providers {
-    type: count_distinct
-    label: "Count of Providers"
-    description: "Distinct count of healthcare providers"
-    sql: ${provider_id} ;;
-    value_format: "#,##0.00"
+  measure: count {
+    type: count
+    label: "Count"
+    description: "Count of records"
   }
 }

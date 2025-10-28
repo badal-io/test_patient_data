@@ -1,25 +1,27 @@
-include: "/Views/bikeshare_trips.view.lkml"
-include: "/Views/bikeshare_stations.view.lkml"
+include: "Views/*.view.lkml"
 
 explore: bikeshare_info {
   label: "Bikeshare Info"
-  view_label: "Bikeshare Trips"
+  description: "Explore bikeshare trips and stations data"
 
   from: bikeshare_trips
+  view_label: "Bikeshare Trips"
 
-  join: start_station {
-    from: bikeshare_stations
-    view_label: "Start Bike Stations"
+  join: start_stations {
     type: left_outer
     relationship: many_to_one
-    sql_on: ${bikeshare_info.start_station_id} = ${start_station.station_id} ;;
+    from: bikeshare_stations
+    label: "Start Bike Stations"
+    view_label: "Start Bike Stations"
+    sql_on: ${bikeshare_trips.start_station_id} = ${start_stations.station_id} ;;
   }
 
-  join: end_station {
-    from: bikeshare_stations
-    view_label: "End Bike Stations"
+  join: end_stations {
     type: left_outer
     relationship: many_to_one
-    sql_on: CAST(${bikeshare_info.end_station_id} AS INT64) = ${end_station.station_id} ;;
+    from: bikeshare_stations
+    label: "End Bike Stations"
+    view_label: "End Bike Stations"
+    sql_on: CAST(${bikeshare_trips.end_station_id} AS INTEGER) = ${end_stations.station_id} ;;
   }
 }

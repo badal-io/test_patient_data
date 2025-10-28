@@ -1,22 +1,17 @@
 view: bikeshare_trips {
   sql_table_name: `@{bikeshare_trips_table}` ;;
 
-  # Primary Key
-  dimension: primary_key {
-    primary_key: yes
-    hidden: yes
-    type: string
-    sql: ${trip_id} ;;
-  }
-
-  # Dimensions
+  # Primary Key (hidden)
   dimension: trip_id {
+    hidden: no
+    primary_key: yes
     type: string
     label: "Trip ID"
     description: "Numeric ID of bike trip"
     sql: ${TABLE}.trip_id ;;
   }
 
+  # Dimensions
   dimension: subscriber_type {
     type: string
     label: "Subscriber Type"
@@ -66,12 +61,12 @@ view: bikeshare_trips {
     sql: ${TABLE}.end_station_name ;;
   }
 
-  # Dimension Groups (Time)
+  # Dimension group for start_time
   dimension_group: start {
     type: time
     label: "Start"
-    description: "Start timestamp of trip"
-    timeframes: [time, date, week, month, year, raw]
+    description: "Start time of trip"
+    timeframes: [time, date, week, month, raw]
     sql: ${TABLE}.start_time ;;
   }
 
@@ -83,8 +78,8 @@ view: bikeshare_trips {
     html: {{ rendered_value | date: "%B %Y" }};;
   }
 
-  # Hidden dimension for measure (with NULL handling)
-  dimension: duration_minutes_raw {
+  # Hidden dimension for measures
+  dimension: _duration_minutes {
     hidden: yes
     type: number
     sql: COALESCE(${TABLE}.duration_minutes, 0) ;;
@@ -94,23 +89,22 @@ view: bikeshare_trips {
   measure: duration_minutes {
     type: sum
     label: "Total Duration (Minutes)"
-    description: "Total time of trips in minutes"
-    sql: ${duration_minutes_raw} ;;
+    description: "Total time of all trips in minutes"
+    sql: ${_duration_minutes} ;;
     value_format: "#,##0.00"
   }
 
   measure: average_duration_minutes {
     type: average
     label: "Average Duration (Minutes)"
-    description: "Average time of trips in minutes"
-    sql: ${duration_minutes_raw} ;;
+    description: "Average duration of trips in minutes"
+    sql: ${_duration_minutes} ;;
     value_format: "#,##0.00"
   }
 
-  measure: count_trips {
+  measure: count {
     type: count
     label: "Count of Trips"
-    description: "Total number of bike trips"
-    value_format: "#,##0.00"
+    description: "Count of bike trips"
   }
 }
