@@ -10,13 +10,16 @@ This Looker project is connected to a database in BigQuery (GCP)
 # Model file
 The model file is already created with the connection defined.
 
-* Add 'include` lines to include elements from all folders
+* Add 'include` lines to include elements from Views and Explores
 
 # Project structure
 
 * Create folders:
    * Views (for view files)
    * Explores (for explore lookml files)
+        * in Explores folder please create 2 files:
+            * bikeshare_explores for bikeshare related explores
+            * patient_explores for inpatient and outpatient related explores
 * Create a manifest file (to define constants)
 
 # Views
@@ -290,32 +293,6 @@ Types of Relationships
 * **one_to_one**: Every row in the base view corresponds to exactly one row in the joined view.
 * **one_to_many**: One row in the base view corresponds to many rows in the joined view. For example, a single order can have many order_items.
 * **many_to_many**: Many rows in the base view correspond to many rows in the joined view. This is the most complex relationship.
-
-### Example
-
-```
-explore: main_table {
- label: "Product and Category analysis"
- description: "This is the main_table explore that I have joined the category_table view to"
- view_label: "Field Picker title "
- group_label: "Test Explores"
- always_filter: {
-   filters: [product_table.name: "A,B,C"]
- }
- join: category_table {
-   sql_on: ${main_table.category_id} = ${category_table.id} ;;
-   relationship: many_to_one
-   type: left_outer
-   fields: [category_table.name]
- }
- join: product_table {
-   sql_on: ${main_table.product_id} = ${product_table.id} ;;
-   type: left_outer
-   relationship: many_to_one
- }
-}
-```
-where `main_table`, `category_table` and `product_table` are views
 
 ## Use of variables from manifest file
 For BigQuery connection:

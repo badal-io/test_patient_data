@@ -1,5 +1,4 @@
-# Manifest file for test_patient_data project
-# This file defines constants used across the project
+connection: "badal_internal_projects"
 
 constant: inpatient_charges_2013_table {
   value: "prj-s-dlp-dq-sandbox-0b3c.EK_test_data.inpatient_charges_2013"
