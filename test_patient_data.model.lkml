@@ -1,16 +1,18 @@
 connection: "badal_internal_projects"
 
-include: "/manifest.lkml"
-include: "/Views/*.view.lkml"
-include: "/Explores/*.explore.lkml"
-include: "/data_tests/*.lkml"
+include: "*.lkml"
+include: "Views/*.view.lkml"
+include: "Explores/*.explore.lkml"
+include: "LookML_Dashboards/*.dashboard.lookml"
+include: "data_tests/*.lkml"
 
-# Datagroup that triggers every Monday at 9am Eastern Time
-# Cache is stored for 12 hours
+# Datagroup for caching (also defined in manifest.lkml)
 datagroup: week_end {
-  label: "Week End"
+  label: "Weekly Cache"
   description: "Triggers every Monday at 9am Eastern Time"
-  sql_trigger: SELECT IF(EXTRACT(DAYOFWEEK FROM CURRENT_TIMESTAMP()) = 2, EXTRACT(HOUR FROM CURRENT_TIMESTAMP()) >= 9, FALSE) ;;
+  sql_trigger: SELECT CASE WHEN EXTRACT(DAYOFWEEK FROM CURRENT_TIMESTAMP() AT TIME ZONE 'US/Eastern') = 2
+               AND EXTRACT(HOUR FROM CURRENT_TIMESTAMP() AT TIME ZONE 'US/Eastern') >= 9 THEN 1 ELSE 0 END ;;
   max_cache_age: "12 hours"
 }
+
 

@@ -1,9 +1,12 @@
-explore: inpatient_charges_2013 {
-  label: "Inpatient & Outpatient"
-  description: "Combined view of inpatient and outpatient charges data"
+include: "../Views/*.view.lkml"
 
-  view_name: inpatient_charges_2013
+explore: inpatient_outpatient {
+  label: "Inpatient & Outpatient"
+  description: "Explore that combines inpatient and outpatient charge data by provider"
+  group_label: "Healthcare"
   view_label: "Inpatient Charges"
+  from: inpatient_charges_2013
+  persist_with: week_end
 
   join: outpatient_charges_2013 {
     type: left_outer

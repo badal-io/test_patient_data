@@ -1,6 +1,7 @@
 # Task
 
-Generate LookML code for a looker project 'test_patient_data' that uses 'test_patient_data' model file.
+Generate LookML code for a looker project 'test_patient_data' that uses 'test_patient_data' model file. 
+Please pay attention to how to build Explores and LookML Dashboards that is described in the end of the file.
 
 # Database/Connection
 
@@ -447,4 +448,208 @@ dimension: zip {
   type: zipcode
   sql: ${TABLE}.zipcode ;;
 }
+```
+
+# Defining Explores
+
+## Prefered syntax
+
+```
+explore: explore_name {
+    description: "Description I want"
+    group_label: "Label to use as a heading in the Explore menu"
+    label: "desired label"
+    from: view_name #use from over view_name
+    persist_for: "N (seconds | minutes | hours)"
+    persist_with: datagroup_name
+
+    join: view_name {
+        # Desired join parameters (described on Join Parameters page)
+        view_label: "desired label for the view"
+
+        # JOIN PARAMETERS
+        fields: [field_or_set, field_or_set, ...]
+        foreign_key: dimension_name
+        from: view_name
+        outer_only: no | yes
+        relationship: many_to_one | many_to_many | one_to_many | one_to_one 
+        required_joins: [view_name, view_name, ...]
+        sql_on: SQL ON clause ;;
+        sql_table_name: table_name ;;
+        type: left_outer | cross | full_outer | inner 
+
+        # QUERY PARAMETERS
+        required_access_grants: [access_grant_name, access_grant_name, ...]
+        sql_where: SQL WHERE condition ;;
+    }
+}
+```
+
+### Example
+
+```
+explore: main_table {
+  label: "Product and Category analysis"
+  description: "This is the main_table explore that I have joined the category_table view to"
+  view_label: "Field Picker title "
+  group_label: "Test Explores"
+  always_filter: {
+    filters: [product_table.name: "A,B,C"]
+  }
+  join: category_table {
+    sql_on: ${main_table.category_id} = ${category_table.id} ;;
+    relationship: many_to_one
+    type: left_outer
+    fields: [category_table.name]
+  }
+  join: product_table {
+    sql_on: ${main_table.product_id} = ${product_table.id} ;;
+    type: left_outer
+    relationship: many_to_one
+  }
+}
+```
+where `main_table`, `category_table` and `product_table` are views
+
+## All parameters
+```
+explore: explore_name {
+  extension: required
+  extends: [explore_name,  explore_name, ...]
+  fields: [field_or_set, field_or_set, ...]
+  tags: ["string1", "string2", ...]
+
+  # DISPLAY PARAMETERS
+  description: "Description I want"
+  group_label: "Label to use as a heading in the Explore menu"
+  hidden: yes | no
+  label: "desired label"
+  query:  {
+      # Desired query parameters (described on the query page)      }
+  view_label: "Field picker heading I want for the Explore's fields"
+
+  # FILTER PARAMETERS
+
+  access_filter: {
+    field: fully_scoped_field
+    user_attribute: user_attribute_name
+  }
+
+  # Possibly more access_filter declarations
+
+  always_filter: {
+    filters: [field_name: "filter expression", field_name: "filter expression", ...]
+  }
+  case_sensitive: yes | no
+  conditionally_filter: {
+    filters: [field_name: "filter expression", field_name: "filter expression", ...]
+    unless: [field_name, field_name, ...]
+  }
+  sql_always_having: SQL HAVING condition ;;
+  sql_always_where: SQL WHERE condition ;;
+
+  # JOIN PARAMETERS
+
+  always_join: [view_name, view_name, ...]
+  join: view_name {
+    # Desired join parameters (described on Join Parameters page)
+  }
+  # Possibly more join declarations
+
+  # QUERY PARAMETERS
+
+  cancel_grouping_fields: [fully_scoped_field, fully_scoped_field, ...]
+  from: view_name
+  persist_for: "N (seconds | minutes | hours)"
+  persist_with: datagroup_name
+  required_access_grants: [access_grant_name, access_grant_name, ...]
+  sql_table_name: table_name ;;
+  sql_preamble: SQL STATEMENT  ;;
+  symmetric_aggregates: yes | no
+  view_name: view_name
+
+  # AGGREGATE TABLE PARAMETERS
+
+  aggregate_table: table_name {
+    query:  {
+      # Desired query parameters (described on the aggregate_table page)
+    }
+    materialization:  {
+      # Desired materialization parameters (described on the aggregate_table page)
+    }
+  }
+  # Possibly more aggregate_table declarations
+}
+
+## REFINEMENT PARAMETERS
+
+explore: +explore_name {
+  final: yes
+}
+```
+
+## Defining dashboards
+
+All LookML Dashboards parameters can be found here:
+https://docs.cloud.google.com/looker/docs/reference/param-lookml-dashboard
+
+
+### Example
+
+```
+- dashboard: dashboard_name
+  preferred_viewer: dashboards | dashboards-next
+  title: "chosen dashboard title"
+  description: "chosen dashboard description"
+  enable_viz_full_screen: true | false
+  extends: name_of_dashboard_being_extended
+  extension: required
+  layout: tile | static | grid | newspaper
+  rows:
+    - elements: [element_name, element_name, ...]
+      height: N
+  tile_size: N
+  width: N
+  refresh: N (seconds | minutes | hours | days)
+  auto_run: true | false
+
+  # DASHBOARD FILTER PARAMETERS
+  crossfilter_enabled: true | false
+  filters_bar_collapsed: true | false
+  filters_location_top: true | false
+  filters:
+  - name: filter_name
+    title: "chosen filter title"
+    type: field_filter | number_filter | date_filter | string_filter
+    model: model_name
+    explore: explore_name
+    field: view_name.field_name
+    default_value: Looker filter expression
+    allow_multiple_values: true | false
+    required: true | false
+    ui_config:
+      type: button_group | checkboxes | range_slider | tag_list | radio_buttons |
+            button_toggles | dropdown_menu | slider | day_picker | day_range_picker |
+            relative_timeframes | advanced
+      display: inline | popover | overflow
+      options:
+        min: N
+        max: N
+      - value options
+    listens_to_filters:
+    - filter_name
+      field: view_name.field_name
+
+  # EMBEDDED DASHBOARD PARAMETERS
+  embed_style:
+    background_color: "css_color"
+    show_title: true | false
+    title_color: "css_color"
+    show_filters_bar: true | false
+    tile_background_color: "css_color"
+    tile_text_color: "css_color"
+
+  # ELEMENTS PARAMETERS
+  elements:
+  # One or more element declarations
 ```

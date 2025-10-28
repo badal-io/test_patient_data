@@ -1,13 +1,12 @@
 view: outpatient_charges_2013 {
-  sql_table_name: `@{outpatient_charges_2013_table}` ;;
-  label: "Outpatient Charges 2013"
+  sql_table_name: `@{outpatient_charges_table}` ;;
 
-  # Primary Key - Hidden
-  dimension: record_id {
+  # Primary Key (hidden)
+  dimension: id {
     primary_key: yes
     hidden: yes
     type: string
-    sql: CONCAT(${provider_id}, '-', ${apc}) ;;
+    sql: CONCAT(${provider_id}, '-', ${apc}, '-', CAST(ROW_NUMBER() OVER (PARTITION BY ${provider_id}, ${apc} ORDER BY ${provider_id}) AS STRING)) ;;
   }
 
   # Dimensions
@@ -47,23 +46,23 @@ view: outpatient_charges_2013 {
   }
 
   dimension: provider_zipcode {
-    type: zipcode
+    type: string
     label: "Provider Zipcode"
-    description: "Zipcode of the provider"
+    description: "Zipcode of the provider location"
     sql: ${TABLE}.provider_zipcode ;;
   }
 
   dimension: apc {
     type: string
     label: "APC"
-    description: "Ambulatory Payment Classification code"
+    description: "Ambulatory Payment Classification"
     sql: ${TABLE}.apc ;;
   }
 
   dimension: apc_code {
     type: string
     label: "APC Code"
-    description: "4-digit code extracted from the beginning of the APC field"
+    description: "4-digit APC code extracted from the beginning of APC field"
     sql: SUBSTR(${TABLE}.apc, 1, 4) ;;
   }
 
@@ -74,47 +73,53 @@ view: outpatient_charges_2013 {
     sql: ${TABLE}.hospital_referral_region ;;
   }
 
-  # Hidden Dimensions for Measures
+  # Hidden dimensions for measures
   dimension: _outpatient_services {
     hidden: yes
     type: number
-    sql: ${TABLE}.outpatient_services ;;
+    label: "Outpatient Services"
+    description: "Number of outpatient services"
+    sql: COALESCE(${TABLE}.outpatient_services, 0) ;;
   }
 
   dimension: _average_estimated_submitted_charges {
     hidden: yes
     type: number
-    sql: ${TABLE}.average_estimated_submitted_charges ;;
+    label: "Average Estimated Submitted Charges"
+    description: "Average estimated submitted charges"
+    sql: COALESCE(${TABLE}.average_estimated_submitted_charges, 0) ;;
   }
 
   dimension: _average_total_payments {
     hidden: yes
     type: number
-    sql: ${TABLE}.average_total_payments ;;
+    label: "Average Total Payments"
+    description: "Average total payments"
+    sql: COALESCE(${TABLE}.average_total_payments, 0) ;;
   }
 
   # Measures
   measure: outpatient_services {
     type: sum
     label: "Outpatient Services"
-    description: "Total number of outpatient services"
-    sql: COALESCE(${_outpatient_services}, 0) ;;
+    description: "Sum of outpatient services"
+    sql: ${_outpatient_services} ;;
     value_format: "#,##0.00"
   }
 
   measure: average_estimated_submitted_charges {
-    type: average
+    type: sum
     label: "Average Estimated Submitted Charges"
-    description: "Average estimated submitted charges"
-    sql: COALESCE(${_average_estimated_submitted_charges}, 0) ;;
+    description: "Sum of average estimated submitted charges"
+    sql: ${_average_estimated_submitted_charges} ;;
     value_format: "#,##0.00"
   }
 
   measure: average_total_payments {
-    type: average
+    type: sum
     label: "Average Total Payments"
-    description: "Average total payments"
-    sql: COALESCE(${_average_total_payments}, 0) ;;
+    description: "Sum of average total payments"
+    sql: ${_average_total_payments} ;;
     value_format: "#,##0.00"
   }
 
