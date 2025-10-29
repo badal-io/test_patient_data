@@ -1,15 +1,13 @@
 view: bikeshare_trips {
   sql_table_name: `@{bikeshare_trips_table}` ;;
 
-  # Primary Key (hidden)
-  dimension: _id {
+  dimension: id {
     primary_key: yes
     hidden: yes
     type: string
-    sql: ${trip_id} ;;
+    sql: ${TABLE}.trip_id ;;
   }
 
-  # Dimensions
   dimension: trip_id {
     type: string
     label: "Trip ID"
@@ -20,7 +18,7 @@ view: bikeshare_trips {
   dimension: subscriber_type {
     type: string
     label: "Subscriber Type"
-    description: "Type of the Subscriber"
+    description: "Type of the subscriber"
     sql: ${TABLE}.subscriber_type ;;
   }
 
@@ -39,7 +37,7 @@ view: bikeshare_trips {
   }
 
   dimension: start_station_id {
-    type: number
+    type: string
     label: "Start Station ID"
     description: "Numeric reference for start station"
     sql: ${TABLE}.start_station_id ;;
@@ -66,27 +64,25 @@ view: bikeshare_trips {
     sql: ${TABLE}.end_station_name ;;
   }
 
-  # Dimension Group for start_time
-  dimension_group: start {
+  dimension_group: start_time {
     type: time
-    label: "Start"
-    description: "Start time of trip"
+    label: "Start Time"
     timeframes: [time, date, week, month, raw]
     sql: ${TABLE}.start_time ;;
   }
 
-  dimension: start_month_year {
-    group_label: "Start Date"
+  dimension: start_time_month_year {
+    group_label: "Start Time"
     label: "Month + Year"
     type: string
-    sql: DATE_TRUNC(${start_date}, MONTH) ;;
+    sql: DATE_TRUNC(${start_time_date}, MONTH) ;;
     html: {{ rendered_value | date: "%B %Y" }};;
   }
 
-  # Hidden Dimension for duration_minutes measure
+  # Hidden dimension for measure
   dimension: _duration_minutes {
-    hidden: yes
     type: number
+    hidden: yes
     sql: ${TABLE}.duration_minutes ;;
   }
 
@@ -94,14 +90,14 @@ view: bikeshare_trips {
   measure: duration_minutes {
     type: sum
     label: "Duration Minutes"
-    description: "Total time of trip in minutes"
+    description: "Total time of trips in minutes"
     sql: COALESCE(${_duration_minutes}, 0) ;;
     value_format: "#,##0.00"
   }
 
   measure: count {
     type: count
-    label: "Count of Trips"
+    label: "Count"
     description: "Number of trips"
   }
 }
