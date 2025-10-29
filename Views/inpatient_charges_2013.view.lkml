@@ -1,15 +1,13 @@
 view: inpatient_charges_2013 {
   sql_table_name: `@{inpatient_charges_2013_table}` ;;
 
-  # Primary Key (hidden)
-  dimension: _id {
+  dimension: id {
     primary_key: yes
     hidden: yes
     type: string
     sql: CONCAT(${provider_id}, '_', ${drg_definition}) ;;
   }
 
-  # Dimensions
   dimension: provider_id {
     type: string
     label: "Provider ID"
@@ -34,28 +32,28 @@ view: inpatient_charges_2013 {
   dimension: provider_city {
     type: string
     label: "Provider City"
-    description: "City where the healthcare provider is located"
+    description: "City where the provider is located"
     sql: ${TABLE}.provider_city ;;
   }
 
   dimension: provider_state {
     type: string
     label: "Provider State"
-    description: "State where the healthcare provider is located"
+    description: "State where the provider is located"
     sql: ${TABLE}.provider_state ;;
   }
 
   dimension: provider_zipcode {
     type: zipcode
     label: "Provider Zipcode"
-    description: "Zipcode of the healthcare provider"
+    description: "Zipcode of the provider location"
     sql: ${TABLE}.provider_zipcode ;;
   }
 
   dimension: drg_definition {
     type: string
     label: "DRG Definition"
-    description: "Diagnosis-Related Group definition"
+    description: "Diagnosis Related Group definition"
     sql: ${TABLE}.drg_definition ;;
   }
 
@@ -66,28 +64,28 @@ view: inpatient_charges_2013 {
     sql: ${TABLE}.hospital_referral_region_description ;;
   }
 
-  # Hidden Dimensions for Measures
+  # Hidden dimensions for measures
   dimension: _total_discharges {
-    hidden: yes
     type: number
+    hidden: yes
     sql: ${TABLE}.total_discharges ;;
   }
 
   dimension: _average_covered_charges {
-    hidden: yes
     type: number
+    hidden: yes
     sql: ${TABLE}.average_covered_charges ;;
   }
 
   dimension: _average_total_payments {
-    hidden: yes
     type: number
+    hidden: yes
     sql: ${TABLE}.average_total_payments ;;
   }
 
   dimension: _average_medicare_payments {
-    hidden: yes
     type: number
+    hidden: yes
     sql: ${TABLE}.average_medicare_payments ;;
   }
 
@@ -101,26 +99,32 @@ view: inpatient_charges_2013 {
   }
 
   measure: average_covered_charges {
-    type: average
+    type: sum
     label: "Average Covered Charges"
-    description: "Average of covered charges"
+    description: "Average covered charges amount"
     sql: COALESCE(${_average_covered_charges}, 0) ;;
     value_format: "#,##0.00"
   }
 
   measure: average_total_payments {
-    type: average
+    type: sum
     label: "Average Total Payments"
-    description: "Average of total payments"
+    description: "Average total payments amount"
     sql: COALESCE(${_average_total_payments}, 0) ;;
     value_format: "#,##0.00"
   }
 
   measure: average_medicare_payments {
-    type: average
+    type: sum
     label: "Average Medicare Payments"
-    description: "Average of Medicare payments"
+    description: "Average Medicare payments amount"
     sql: COALESCE(${_average_medicare_payments}, 0) ;;
     value_format: "#,##0.00"
+  }
+
+  measure: count {
+    type: count
+    label: "Count"
+    description: "Number of records"
   }
 }
