@@ -52,7 +52,7 @@ c.*
 
 from `prj-s-dlp-dq-sandbox-0b3c.EK_test_data.bikeshare_trips` a
 left join `prj-s-dlp-dq-sandbox-0b3c.EK_test_data.bikeshare_stations` b on a.start_station_id=b.station_id
-left join `prj-s-dlp-dq-sandbox-0b3c.EK_test_data.bikeshare_stations` c on cast(a.end_station_id as INTEGER)=c.station_id
+left join `prj-s-dlp-dq-sandbox-0b3c.EK_test_data.bikeshare_stations` c on cast(a.end_station_id as INTEGER)=c.station_id 
 * View 1:
    * bikeshare_trips
    * view label: Bikeshare Trips
@@ -66,6 +66,8 @@ left join `prj-s-dlp-dq-sandbox-0b3c.EK_test_data.bikeshare_stations` c on cast(
 
 * Join type: left_outer
 * relationship: many_to_one
+
+* Note: if dimensions are already converted to the same format on a view level then there is no need to convert them at join (explore) level. 
 
 ## Explores 3-6:
 

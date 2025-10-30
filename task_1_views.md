@@ -142,11 +142,11 @@ CREATE TABLE `prj-s-dlp-dq-sandbox-0b3c.EK_test_data.bikeshare_trips`
 Dimensions:
 trip_id,
  subscriber_type,
- bike_id STRING,
- bike_type STRING,
- start_station_id ,
+ bike_id,
+ bike_type,
+ start_station_id, (all station_id dimensions should be INTEGER type, so if this field is not then convert it to integer. please take it into account that it's in BigQuery)
  start_station_name ,
- end_station_id ,
+ end_station_id , (all station_id dimensions should be INTEGER type, so if this field is not then convert it to integer. please take it into account that it's in BigQuery)
  end_station_name
 
 Dimension_groups (type time):
@@ -165,7 +165,7 @@ Name: bikeshare_stations
 Table's ddl:
 CREATE TABLE `prj-s-dlp-dq-sandbox-0b3c.EK_test_data.bikeshare_stations`
 (
- station_id INT64,
+ station_id INT64, (all station_id dimensions should be INTEGER type, so if this field is not then convert it to integer. please take it into account that it's in BigQuery)
  name STRING,
  status STRING,
  location STRING,
