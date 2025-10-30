@@ -3,7 +3,6 @@ include: "/Views/*.view.lkml"
 # Explore 1: Bikeshare Info with joined stations
 explore: bikeshare_trips {
   label: "Bikeshare Info"
-
   view_label: "Bikeshare Trips"
 
   join: bikeshare_stations {
@@ -23,11 +22,13 @@ explore: bikeshare_trips {
 }
 
 # Explore 2: Simple explore for bikeshare_trips
-explore: bikeshare_trips_simple {
+explore: bikeshare_trips_explore {
   label: "Bikeshare Trips"
+  view_name: bikeshare_trips
 }
 
 # Explore 3: Simple explore for bikeshare_stations
-explore: bikeshare_stations {
+explore: bikeshare_stations_explore {
   label: "Bikeshare Stations"
+  view_name: bikeshare_stations
 }
