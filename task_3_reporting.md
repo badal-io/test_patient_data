@@ -2,6 +2,8 @@
 
 Generate LookML dashboards for a looker project 'test_patient_data' that uses 'test_patient_data' model file.
 
+Do a comprehensive research on building LookML dashboards taking into account this document and the information that you can find yourself.
+
 # Database/Connection
 
 This Looker project is connected to a database in BigQuery (GCP)
@@ -90,62 +92,334 @@ Embedded Dashboard Parameters
 *tile_text_color*	Set the tile text color of an embedded dashboard.
 
 ### Example usage
+
+#### Example 1
+
+Dashboard that
+* named Test_Dashboard
+* has 2 filters: Type and Country
+* has 1 tile, named "Table tile" and it's table type of visualization
+
 ```
-- dashboard: dashboard_name
-  preferred_viewer: dashboards | dashboards-next
-  title: "chosen dashboard title"
-  description: "chosen dashboard description"
-  enable_viz_full_screen: true | false
-  extends: name_of_dashboard_being_extended
-  extension: required
-  layout: tile | static | grid | newspaper
-  rows:
-    - elements: [element_name, element_name, ...]
-      height: N
-  tile_size: N
-  width: N
-  refresh: N (seconds | minutes | hours | days)
-  auto_run: true | false
-
-  # DASHBOARD FILTER PARAMETERS
-  crossfilter_enabled: true | false
-  filters_bar_collapsed: true | false
-  filters_location_top: true | false
-  filters:
-  - name: filter_name
-    title: "chosen filter title"
-    type: field_filter | number_filter | date_filter | string_filter
-    model: model_name
-    explore: explore_name
-    field: view_name.field_name
-    default_value: Looker filter expression
-    allow_multiple_values: true | false
-    required: true | false
-    ui_config:
-      type: button_group | checkboxes | range_slider | tag_list | radio_buttons |
-            button_toggles | dropdown_menu | slider | day_picker | day_range_picker |
-            relative_timeframes | advanced
-      display: inline | popover | overflow
-      options:
-        min: N
-        max: N
-      - value options
-    listens_to_filters:
-    - filter_name
-      field: view_name.field_name
-
-  # EMBEDDED DASHBOARD PARAMETERS
-  embed_style:
-    background_color: "css_color"
-    show_title: true | false
-    title_color: "css_color"
-    show_filters_bar: true | false
-    tile_background_color: "css_color"
-    tile_text_color: "css_color"
-
-  # ELEMENTS PARAMETERS
+---
+- dashboard: test_dashboard
+  title: Test_Dashboard
+  layout: newspaper
+  preferred_viewer: dashboards-next
+  description: ''
+  preferred_slug: oRNjwHYklLaKEpJAOCpKMs
   elements:
-  # One or more element declarations
+  - title: Table tile
+    name: Table tile
+    model: bi_sandbox
+    explore: v_netflix_titles_enriched
+    type: looker_grid
+    fields: [v_netflix_titles_enriched.type, v_netflix_titles_enriched.count, v_netflix_titles_enriched.avg_tv_seasons,
+      v_netflix_titles_enriched.country]
+    sorts: [v_netflix_titles_enriched.count desc 0]
+    limit: 500
+    column_limit: 50
+    show_view_names: false
+    show_row_numbers: true
+    transpose: false
+    truncate_text: true
+    hide_totals: false
+    hide_row_totals: false
+    size_to_fit: true
+    table_theme: white
+    limit_displayed_rows: false
+    enable_conditional_formatting: false
+    header_text_alignment: left
+    header_font_size: 12
+    rows_font_size: 12
+    conditional_formatting_include_totals: false
+    conditional_formatting_include_nulls: false
+    x_axis_gridlines: false
+    y_axis_gridlines: true
+    show_y_axis_labels: true
+    show_y_axis_ticks: true
+    y_axis_tick_density: default
+    y_axis_tick_density_custom: 5
+    show_x_axis_label: true
+    show_x_axis_ticks: true
+    y_axis_scale_mode: linear
+    x_axis_reversed: false
+    y_axis_reversed: false
+    plot_size_by_field: false
+    trellis: ''
+    stacking: ''
+    legend_position: center
+    point_style: none
+    show_value_labels: false
+    label_density: 25
+    x_axis_scale: auto
+    y_axis_combined: true
+    ordering: none
+    show_null_labels: false
+    show_totals_labels: false
+    show_silhouette: false
+    totals_color: "#808080"
+    defaults_version: 1
+    listen:
+      Type: v_netflix_titles_enriched.type
+      Country: v_netflix_titles_enriched.country
+    row: 0
+    col: 0
+    width: 24
+    height: 9
+  filters:
+  - name: Type
+    title: Type
+    type: field_filter
+    default_value: ''
+    allow_multiple_values: true
+    required: false
+    ui_config:
+      type: button_group
+      display: inline
+    model: bi_sandbox
+    explore: v_netflix_titles_enriched
+    listens_to_filters: []
+    field: v_netflix_titles_enriched.type
+  - name: Country
+    title: Country
+    type: field_filter
+    default_value: ''
+    allow_multiple_values: true
+    required: false
+    ui_config:
+      type: tag_list
+      display: popover
+    model: bi_sandbox
+    explore: v_netflix_titles_enriched
+    listens_to_filters: []
+    field: v_netflix_titles_enriched.country
+```
+
+#### Example 2
+
+Dashboard that
+* named Test_Dashboard
+* has 3 filters: Type, Country and "Date Added Date"
+* has 3 tiles
+  * Pie chart named "Pie tile"
+  * Single digit tile named "Total count"
+  * Bar chart tile named "Bar chart tile"
+
+```
+---
+- dashboard: test_dashboard
+  title: Test_Dashboard
+  layout: newspaper
+  preferred_viewer: dashboards-next
+  description: ''
+  preferred_slug: oRNjwHYklLaKEpJAOCpKMs
+  elements:
+  - title: Pie tile
+    name: Pie tile
+    model: bi_sandbox
+    explore: v_netflix_titles_enriched
+    type: looker_pie
+    fields: [v_netflix_titles_enriched.type, v_netflix_titles_enriched.count]
+    sorts: [v_netflix_titles_enriched.count desc 0]
+    limit: 500
+    column_limit: 50
+    value_labels: legend
+    label_type: labPer
+    x_axis_gridlines: false
+    y_axis_gridlines: true
+    show_view_names: false
+    show_y_axis_labels: true
+    show_y_axis_ticks: true
+    y_axis_tick_density: default
+    y_axis_tick_density_custom: 5
+    show_x_axis_label: true
+    show_x_axis_ticks: true
+    y_axis_scale_mode: linear
+    x_axis_reversed: false
+    y_axis_reversed: false
+    plot_size_by_field: false
+    trellis: ''
+    stacking: ''
+    limit_displayed_rows: false
+    legend_position: center
+    point_style: none
+    show_value_labels: false
+    label_density: 25
+    x_axis_scale: auto
+    y_axis_combined: true
+    ordering: none
+    show_null_labels: false
+    show_totals_labels: false
+    show_silhouette: false
+    totals_color: "#808080"
+    defaults_version: 1
+    listen:
+      Country: v_netflix_titles_enriched.country
+      Type: v_netflix_titles_enriched.type
+      Date Added Date: v_netflix_titles_enriched.date_added_date
+    row: 0
+    col: 0
+    width: 9
+    height: 8
+  - title: Total count
+    name: Total count
+    model: bi_sandbox
+    explore: v_netflix_titles_enriched
+    type: single_value
+    fields: [v_netflix_titles_enriched.count]
+    limit: 500
+    column_limit: 50
+    custom_color_enabled: true
+    show_single_value_title: true
+    show_comparison: false
+    comparison_type: value
+    comparison_reverse_colors: false
+    show_comparison_label: true
+    enable_conditional_formatting: false
+    conditional_formatting_include_totals: false
+    conditional_formatting_include_nulls: false
+    x_axis_gridlines: false
+    y_axis_gridlines: true
+    show_view_names: false
+    show_y_axis_labels: true
+    show_y_axis_ticks: true
+    y_axis_tick_density: default
+    y_axis_tick_density_custom: 5
+    show_x_axis_label: true
+    show_x_axis_ticks: true
+    y_axis_scale_mode: linear
+    x_axis_reversed: false
+    y_axis_reversed: false
+    plot_size_by_field: false
+    trellis: ''
+    stacking: ''
+    limit_displayed_rows: false
+    legend_position: center
+    point_style: none
+    show_value_labels: false
+    label_density: 25
+    x_axis_scale: auto
+    y_axis_combined: true
+    ordering: none
+    show_null_labels: false
+    show_totals_labels: false
+    show_silhouette: false
+    totals_color: "#808080"
+    defaults_version: 1
+    value_labels: legend
+    label_type: labPer
+    hidden_pivots: {}
+    listen:
+      Country: v_netflix_titles_enriched.country
+      Type: v_netflix_titles_enriched.type
+      Date Added Date: v_netflix_titles_enriched.date_added_date
+    row: 0
+    col: 9
+    width: 5
+    height: 4
+  - title: Bar chart tile
+    name: Bar chart tile
+    model: bi_sandbox
+    explore: v_netflix_titles_enriched
+    type: looker_bar
+    fields: [v_netflix_titles_enriched.count, v_netflix_titles_enriched.country]
+    sorts: [v_netflix_titles_enriched.count desc 0]
+    limit: 500
+    column_limit: 50
+    x_axis_gridlines: false
+    y_axis_gridlines: true
+    show_view_names: false
+    show_y_axis_labels: true
+    show_y_axis_ticks: true
+    y_axis_tick_density: default
+    y_axis_tick_density_custom: 5
+    show_x_axis_label: true
+    show_x_axis_ticks: true
+    y_axis_scale_mode: linear
+    x_axis_reversed: false
+    y_axis_reversed: false
+    plot_size_by_field: false
+    trellis: ''
+    stacking: ''
+    limit_displayed_rows: false
+    legend_position: center
+    point_style: none
+    show_value_labels: true
+    label_density: 25
+    x_axis_scale: auto
+    y_axis_combined: true
+    ordering: none
+    show_null_labels: false
+    show_totals_labels: false
+    show_silhouette: false
+    totals_color: "#808080"
+    x_axis_zoom: true
+    y_axis_zoom: true
+    series_colors:
+      v_netflix_titles_enriched.count: "#211B41"
+    defaults_version: 1
+    value_labels: legend
+    label_type: labPer
+    hidden_pivots: {}
+    custom_color_enabled: true
+    show_single_value_title: true
+    show_comparison: false
+    comparison_type: value
+    comparison_reverse_colors: false
+    show_comparison_label: true
+    enable_conditional_formatting: false
+    conditional_formatting_include_totals: false
+    conditional_formatting_include_nulls: false
+    listen:
+      Country: v_netflix_titles_enriched.country
+      Type: v_netflix_titles_enriched.type
+      Date Added Date: v_netflix_titles_enriched.date_added_date
+    row: 0
+    col: 14
+    width: 10
+    height: 8
+  filters:
+  - name: Type
+    title: Type
+    type: field_filter
+    default_value: ''
+    allow_multiple_values: true
+    required: false
+    ui_config:
+      type: button_group
+      display: inline
+    model: bi_sandbox
+    explore: v_netflix_titles_enriched
+    listens_to_filters: []
+    field: v_netflix_titles_enriched.type
+  - name: Country
+    title: Country
+    type: field_filter
+    default_value: ''
+    allow_multiple_values: true
+    required: false
+    ui_config:
+      type: tag_list
+      display: popover
+    model: bi_sandbox
+    explore: v_netflix_titles_enriched
+    listens_to_filters: []
+    field: v_netflix_titles_enriched.country
+  - name: Date Added Date
+    title: Date Added Date
+    type: field_filter
+    default_value: 90 day
+    allow_multiple_values: true
+    required: false
+    ui_config:
+      type: relative_timeframes
+      display: inline
+      options: []
+    model: bi_sandbox
+    explore: v_netflix_titles_enriched
+    listens_to_filters: []
+    field: v_netflix_titles_enriched.date_added_date
 ```
 
 # Rules/Best Practices
