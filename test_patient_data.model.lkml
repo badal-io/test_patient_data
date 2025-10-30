@@ -1,4 +1,3 @@
 connection: "badal_internal_projects"
 
-include: "Views/*.view.lkml"
-include: "Explores/*.explore.lkml"
+include: "/Views/*.view.lkml"

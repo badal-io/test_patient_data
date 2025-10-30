@@ -1,18 +1,21 @@
 view: bikeshare_stations {
   sql_table_name: `@{bikeshare_stations_table}` ;;
 
-  dimension: id {
+  # Primary Key (hidden)
+  dimension: primary_key {
     primary_key: yes
     hidden: yes
     type: number
-    sql: ${TABLE}.station_id ;;
+    sql: ${station_id} ;;
   }
 
+  # Dimensions
   dimension: station_id {
+    primary_key: no
     type: number
     label: "Station ID"
     description: "Unique identifier for the station"
-    sql: ${TABLE}.station_id ;;
+    sql: CAST(${TABLE}.station_id AS INT64) ;;
   }
 
   dimension: name {
@@ -33,8 +36,8 @@ view: bikeshare_stations {
     type: location
     label: "Location"
     description: "Geographic location of the station"
-    sql_latitude: CAST(JSON_EXTRACT_SCALAR(${TABLE}.location, '$.coordinates[1]') AS FLOAT64) ;;
-    sql_longitude: CAST(JSON_EXTRACT_SCALAR(${TABLE}.location, '$.coordinates[0]') AS FLOAT64) ;;
+    sql_latitude: CAST(REGEXP_EXTRACT(${TABLE}.location, r'^POINT\(([^)]*)\)') AS FLOAT64) ;;
+    sql_longitude: CAST(REGEXP_EXTRACT(${TABLE}.location, r'^POINT\([^)]*\s+([^)]*)\)') AS FLOAT64) ;;
   }
 
   dimension: address {
@@ -54,7 +57,7 @@ view: bikeshare_stations {
   dimension: city_asset_number {
     type: number
     label: "City Asset Number"
-    description: "City asset identifier"
+    description: "City asset number for the station"
     sql: ${TABLE}.city_asset_number ;;
   }
 
@@ -68,14 +71,14 @@ view: bikeshare_stations {
   dimension: power_type {
     type: string
     label: "Power Type"
-    description: "Type of power supply"
+    description: "Type of power system"
     sql: ${TABLE}.power_type ;;
   }
 
   dimension: notes {
     type: string
     label: "Notes"
-    description: "Additional notes"
+    description: "Additional notes about the station"
     sql: ${TABLE}.notes ;;
   }
 
@@ -93,37 +96,38 @@ view: bikeshare_stations {
     sql: ${TABLE}.image ;;
   }
 
-  dimension_group: modified_date {
+  # Dimension Group for time (modified_date)
+  dimension_group: modified {
     type: time
-    label: "Modified Date"
+    label: "Modified"
     timeframes: [time, date, week, month, raw]
     sql: ${TABLE}.modified_date ;;
   }
 
-  dimension: modified_date_month_year {
+  dimension: modified_month_year {
     group_label: "Modified Date"
     label: "Month + Year"
     type: string
-    sql: DATE_TRUNC(${modified_date_date}, MONTH) ;;
+    sql: DATE_TRUNC(${modified_date}, MONTH) ;;
     html: {{ rendered_value | date: "%B %Y" }};;
   }
 
   # Hidden dimensions for measures
   dimension: _number_of_docks {
-    type: number
     hidden: yes
+    type: number
     sql: ${TABLE}.number_of_docks ;;
   }
 
   dimension: _footprint_length {
-    type: number
     hidden: yes
+    type: number
     sql: ${TABLE}.footprint_length ;;
   }
 
   dimension: _footprint_width {
-    type: number
     hidden: yes
+    type: number
     sql: ${TABLE}.footprint_width ;;
   }
 
@@ -131,7 +135,7 @@ view: bikeshare_stations {
   measure: number_of_docks {
     type: sum
     label: "Number of Docks"
-    description: "Total number of docks"
+    description: "Sum of number of docks"
     sql: COALESCE(${_number_of_docks}, 0) ;;
     value_format: "#,##0.00"
   }
@@ -139,7 +143,7 @@ view: bikeshare_stations {
   measure: footprint_length {
     type: sum
     label: "Footprint Length"
-    description: "Total footprint length"
+    description: "Sum of footprint length"
     sql: COALESCE(${_footprint_length}, 0) ;;
     value_format: "#,##0.00"
   }
@@ -147,7 +151,7 @@ view: bikeshare_stations {
   measure: footprint_width {
     type: sum
     label: "Footprint Width"
-    description: "Total footprint width"
+    description: "Sum of footprint width"
     sql: COALESCE(${_footprint_width}, 0) ;;
     value_format: "#,##0.00"
   }
@@ -155,6 +159,6 @@ view: bikeshare_stations {
   measure: count {
     type: count
     label: "Count"
-    description: "Number of stations"
+    description: "Count of stations"
   }
 }

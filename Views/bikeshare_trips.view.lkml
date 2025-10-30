@@ -1,14 +1,17 @@
 view: bikeshare_trips {
   sql_table_name: `@{bikeshare_trips_table}` ;;
 
-  dimension: id {
+  # Primary Key (hidden)
+  dimension: primary_key {
     primary_key: yes
     hidden: yes
     type: string
-    sql: ${TABLE}.trip_id ;;
+    sql: ${trip_id} ;;
   }
 
+  # Dimensions
   dimension: trip_id {
+    primary_key: no
     type: string
     label: "Trip ID"
     description: "Numeric ID of bike trip"
@@ -18,7 +21,7 @@ view: bikeshare_trips {
   dimension: subscriber_type {
     type: string
     label: "Subscriber Type"
-    description: "Type of the subscriber"
+    description: "Type of the Subscriber"
     sql: ${TABLE}.subscriber_type ;;
   }
 
@@ -37,10 +40,10 @@ view: bikeshare_trips {
   }
 
   dimension: start_station_id {
-    type: string
+    type: number
     label: "Start Station ID"
     description: "Numeric reference for start station"
-    sql: ${TABLE}.start_station_id ;;
+    sql: CAST(${TABLE}.start_station_id AS INT64) ;;
   }
 
   dimension: start_station_name {
@@ -51,10 +54,10 @@ view: bikeshare_trips {
   }
 
   dimension: end_station_id {
-    type: string
+    type: number
     label: "End Station ID"
     description: "Numeric reference for end station"
-    sql: ${TABLE}.end_station_id ;;
+    sql: CAST(${TABLE}.end_station_id AS INT64) ;;
   }
 
   dimension: end_station_name {
@@ -64,25 +67,26 @@ view: bikeshare_trips {
     sql: ${TABLE}.end_station_name ;;
   }
 
-  dimension_group: start_time {
+  # Dimension Group for time (start_time)
+  dimension_group: start {
     type: time
-    label: "Start Time"
+    label: "Start"
     timeframes: [time, date, week, month, raw]
     sql: ${TABLE}.start_time ;;
   }
 
-  dimension: start_time_month_year {
-    group_label: "Start Time"
+  dimension: start_month_year {
+    group_label: "Start Date"
     label: "Month + Year"
     type: string
-    sql: DATE_TRUNC(${start_time_date}, MONTH) ;;
+    sql: DATE_TRUNC(${start_date}, MONTH) ;;
     html: {{ rendered_value | date: "%B %Y" }};;
   }
 
   # Hidden dimension for measure
   dimension: _duration_minutes {
-    type: number
     hidden: yes
+    type: number
     sql: ${TABLE}.duration_minutes ;;
   }
 
@@ -90,7 +94,7 @@ view: bikeshare_trips {
   measure: duration_minutes {
     type: sum
     label: "Duration Minutes"
-    description: "Total time of trips in minutes"
+    description: "Sum of trip duration in minutes"
     sql: COALESCE(${_duration_minutes}, 0) ;;
     value_format: "#,##0.00"
   }
@@ -98,6 +102,6 @@ view: bikeshare_trips {
   measure: count {
     type: count
     label: "Count"
-    description: "Number of trips"
+    description: "Count of bike trips"
   }
 }
