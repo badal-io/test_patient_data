@@ -4,6 +4,7 @@ include: "/Views/*.view.lkml"
 explore: bikeshare_trips {
   label: "Bikeshare Info"
   view_label: "Bikeshare Trips"
+  persist_with: daily_datagroup
 
   join: bikeshare_stations {
     type: left_outer
@@ -25,10 +26,12 @@ explore: bikeshare_trips {
 explore: bikeshare_trips_explore {
   label: "Bikeshare Trips"
   view_name: bikeshare_trips
+  persist_with: daily_datagroup
 }
 
 # Explore 3: Simple explore for bikeshare_stations
 explore: bikeshare_stations_explore {
   label: "Bikeshare Stations"
   view_name: bikeshare_stations
+  persist_with: daily_datagroup
 }
