@@ -1,8 +1,6 @@
-# Datagroups for caching policies
-
 datagroup: daily_datagroup {
-  label: "Daily Cache"
-  description: "Triggers every day at midnight UTC and caches results for 24 hours"
+  label: "Daily Datagroup"
+  description: "Triggers every day at midnight UTC to refresh cached query results"
+  sql_trigger: SELECT CURRENT_DATE() ;;
   max_cache_age: "24 hours"
-  interval_trigger: "24 hours"
 }
