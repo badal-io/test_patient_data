@@ -198,6 +198,7 @@ Dimensions:
 
 Dimensions (type location):
  location
+ field "location" has values like this "(30.26587, -97.76826)". to extract lattitude and longitude please extract it from the value, don't forget to remove brackets. 
 
 Dimension_groups (type time):
 

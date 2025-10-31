@@ -34,9 +34,9 @@ view: bikeshare_stations {
   dimension: location {
     type: location
     label: "Location"
-    description: "Geographic location of the station"
-    sql_latitude: ${TABLE}.latitude ;;
-    sql_longitude: ${TABLE}.longitude ;;
+    description: "Geographic location of the station extracted from (latitude, longitude) format"
+    sql_latitude: CAST(REGEXP_EXTRACT(${TABLE}.location, r'\(([^,]+),') AS FLOAT64) ;;
+    sql_longitude: CAST(REGEXP_EXTRACT(${TABLE}.location, r',\s*([^)]+)\)') AS FLOAT64) ;;
   }
 
   dimension: address {
