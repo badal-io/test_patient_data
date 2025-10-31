@@ -5,7 +5,6 @@ view: bikeshare_trips {
   dimension: primary_key {
     primary_key: yes
     hidden: yes
-    type: string
     sql: ${trip_id} ;;
   }
 
@@ -67,24 +66,25 @@ view: bikeshare_trips {
     sql: ${TABLE}.end_station_name ;;
   }
 
-  # Dimension Group for time (start_time)
-  dimension_group: start {
+  # Time dimension
+  dimension_group: start_time {
     type: time
-    label: "Start"
+    label: "Start Time"
+    description: "Start timestamp of trip"
     timeframes: [time, date, week, month, raw]
     sql: ${TABLE}.start_time ;;
   }
 
-  dimension: start_month_year {
-    group_label: "Start Date"
+  dimension: start_time_month_year {
+    group_label: "Start Time Date"
     label: "Month + Year"
     type: string
-    sql: DATE_TRUNC(${start_date}, MONTH) ;;
+    sql: DATE_TRUNC(${start_time_date}, MONTH) ;;
     html: {{ rendered_value | date: "%B %Y" }};;
   }
 
   # Hidden dimension for measure
-  dimension: _duration_minutes {
+  dimension: duration_minutes_hidden {
     hidden: yes
     type: number
     sql: ${TABLE}.duration_minutes ;;
@@ -94,8 +94,16 @@ view: bikeshare_trips {
   measure: duration_minutes {
     type: sum
     label: "Duration Minutes"
-    description: "Sum of trip duration in minutes"
-    sql: COALESCE(${_duration_minutes}, 0) ;;
+    description: "Total duration of trips in minutes"
+    sql: COALESCE(${duration_minutes_hidden}, 0) ;;
+    value_format: "#,##0.00"
+  }
+
+  measure: average_duration_minutes {
+    type: average
+    label: "Average Duration Minutes"
+    description: "Average duration of trips in minutes"
+    sql: COALESCE(${duration_minutes_hidden}, 0) ;;
     value_format: "#,##0.00"
   }
 
@@ -103,5 +111,6 @@ view: bikeshare_trips {
     type: count
     label: "Count"
     description: "Count of bike trips"
+    drill_fields: [trip_id, subscriber_type, bike_id, start_station_name, end_station_name]
   }
 }

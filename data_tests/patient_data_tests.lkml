@@ -1,8 +1,6 @@
-# Data tests for Inpatient & Outpatient Explore
-
-# Test 1: Check that provider zipcode from inpatient_charges_2013 doesn't have any NULLs
-test: provider_zipcode_not_null {
-  explore_source: inpatient_charges_2013 {
+# Data Test 1: Check that provider zipcode field from inpatient_charges_2013 doesn't have any NULLs
+test: inpatient_provider_zipcode_not_null {
+  explore_source: inpatient_outpatient {
     column: provider_zipcode {
       field: inpatient_charges_2013.provider_zipcode
     }
@@ -14,9 +12,9 @@ test: provider_zipcode_not_null {
   }
 }
 
-# Test 2: Check that measure outpatient_services from outpatient_charges_2013 is greater than 1000 by city
+# Data Test 2: Check that measure outpatient_services from outpatient_charges_2013 is greater than 1000 by city
 test: outpatient_services_greater_than_1000_by_city {
-  explore_source: inpatient_charges_2013 {
+  explore_source: inpatient_outpatient {
     column: provider_city {
       field: inpatient_charges_2013.provider_city
     }
@@ -24,8 +22,9 @@ test: outpatient_services_greater_than_1000_by_city {
       field: outpatient_charges_2013.outpatient_services
     }
     sorts: [outpatient_charges_2013.outpatient_services: asc]
+    limit: 500
   }
-  assert: outpatient_services_gt_1000 {
+  assert: outpatient_services_greater_than_1000 {
     expression: ${outpatient_charges_2013.outpatient_services} > 1000 ;;
   }
 }
